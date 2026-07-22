@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <title>WORD FRONTLINE 先生用ガイド</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, "Noto Sans JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+      --bg: #050b14;
+      --panel: #0c1929;
+      --panel-2: #10243a;
+      --line: #2d5472;
+      --cyan: #43d9ff;
+      --green: #50eea8;
+      --yellow: #ffe268;
+      --text: #f4fbff;
+      --muted: #acc2d4;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 50% -10%, #163856, #07111f 42%, #03070d); color: var(--text); }
+    main { width: min(980px, calc(100% - 28px)); margin: 0 auto; padding: 36px 0 60px; }
+    header { padding: 26px; border: 1px solid var(--line); border-radius: 22px; background: #081522ee; box-shadow: 0 22px 60px #0009; }
+    .eyebrow { margin: 0 0 8px; color: var(--cyan); font-size: 12px; font-weight: 900; letter-spacing: .16em; }
+    h1 { margin: 0; font-size: clamp(30px, 7vw, 58px); line-height: 1; }
+    .lead { max-width: 720px; margin: 14px 0 0; color: var(--muted); line-height: 1.8; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; padding: 10px 16px; border: 1px solid #62dfff; border-radius: 11px; background: #0b6ca8; color: #fff; font-weight: 900; text-decoration: none; }
+    .button.secondary { border-color: #52718a; background: #13283c; }
+    .button.download { border-color: #4bd7a0; background: #126447; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+    section { padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, var(--panel), #08131f); }
+    section.wide { grid-column: 1 / -1; }
+    h2 { margin: 0 0 12px; color: var(--cyan); font-size: 20px; }
+    h3 { margin: 18px 0 8px; font-size: 16px; }
+    p, li { color: var(--muted); line-height: 1.75; }
+    ol, ul { margin: 8px 0 0; padding-left: 1.35em; }
+    code { padding: 2px 6px; border: 1px solid #294860; border-radius: 5px; background: #06101a; color: #dff8ff; overflow-wrap: anywhere; }
+    .notice { border-left: 4px solid var(--yellow); padding: 10px 12px; border-radius: 8px; background: #3b310d66; color: #fff4b8; }
+    .ok { border-left-color: var(--green); background: #0f3a2b66; color: #bfffe4; }
+    footer { margin-top: 18px; color: #7f9aaf; font-size: 13px; text-align: center; }
+    a { color: #7de5ff; }
+    a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } section.wide { grid-column: auto; } header, section { padding: 18px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">TEACHER GUIDE</p>
+      <h1>WORD FRONTLINE</h1>
+      <p class="lead">生徒用ゲーム本体は元のHTMLを変更せずに公開しています。授業中の単語変更と、公開版そのものの変更を、どちらもブラウザだけで行えます。</p>
+      <div class="actions">
+        <a class="button" href="word-frontline-random-boss.html">ゲームを開く</a>
+        <a class="button secondary" href="https://github.com/takase810/word-frontline-random-boss/edit/main/word-frontline-random-boss.html">公開版を簡単編集</a>
+        <a class="button secondary" href="https://github.dev/takase810/word-frontline-random-boss/blob/main/word-frontline-random-boss.html">高機能エディター</a>
+        <a class="button download" href="word-frontline-random-boss.html" download>元HTMLを保存</a>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section>
+        <h2>単語だけ変える</h2>
+        <ol>
+          <li>ゲームを開き、最初の画面で「単語リスト編集」を押します。</li>
+          <li>英単語と意味を貼り付け、「プレビュー」→「適用」の順に押します。</li>
+          <li>その端末のブラウザに自動保存されます。</li>
+        </ol>
+        <p class="notice ok">この方法は授業ごとの一時調整に向いています。公開サイトの元HTMLは変わりません。</p>
+      </section>
+
+      <section>
+        <h2>公開版を変える</h2>
+        <ol>
+          <li>上の「公開版を簡単編集」を押し、GitHubにログインします。</li>
+          <li>HTMLを編集し、「Commit changes…」を押して保存します。</li>
+          <li>GitHub Pagesが裏側で自動更新します。作業タブを閉じても更新処理は続きます。</li>
+        </ol>
+        <p>大きな変更は「高機能エディター」で行えます。間違えてもGitHubの履歴から以前の版へ戻せます。</p>
+      </section>
+
+      <section>
+        <h2>ロイロノートで配る</h2>
+        <ol>
+          <li>生徒用URLをロイロノートの「Webカード」にします。</li>
+          <li>授業前に、生徒アカウントで一度開けることを確認します。</li>
+          <li>URLフィルタを使っている場合は <code>takase810.github.io</code> を許可します。</li>
+        </ol>
+        <p>生徒用URL：<br><a href="https://takase810.github.io/word-frontline-random-boss/">https://takase810.github.io/word-frontline-random-boss/</a></p>
+      </section>
+
+      <section>
+        <h2>端末内に保存されるもの</h2>
+        <ul>
+          <li>学習記録、苦手単語、設定、差し替えた単語リスト</li>
+          <li>保存先は各端末・各ブラウザです。別端末には自動共有されません。</li>
+          <li>履歴を消すと学習記録も消えることがあります。</li>
+        </ul>
+        <p class="notice">公開リポジトリには、生徒名・学籍番号・成績・パスワードなどを記載しないでください。</p>
+      </section>
+
+      <section class="wide">
+        <h2>バックグラウンド動作</h2>
+        <h3>サイトの更新</h3>
+        <p>GitHubで保存すると、公開処理はGitHub側で進みます。パソコンを閉じても処理は継続します。通常は数分待ってからゲームを再読み込みしてください。</p>
+        <h3>ゲーム中に別のタブへ移動したとき</h3>
+        <p>ゲームは自動で一時停止し、戻ると再開します。音声は端末やブラウザの省電力設定により止まることがあるため、音が出ない場合は画面内の再生ボタンを一度押してください。</p>
+        <h3>オフラインで使う</h3>
+        <p>「元HTMLを保存」で1ファイルとして保存できます。通信できない場面では、そのHTMLをロイロノートで配布する方法も使えます。</p>
+      </section>
+    </div>
+
+    <footer>生徒にはゲームURLだけを配り、この先生用ガイドのURLは先生側で保管してください。</footer>
+  </main>
+</body>
+</html>
