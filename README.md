@@ -4,8 +4,8 @@
 
 ## 公開URL
 
-- 生徒用: <https://takase810.github.io/word-frontline-random-boss/>
-- 先生用ガイド: <https://takase810.github.io/word-frontline-random-boss/teacher-guide.html>
+- 生徒用: <https://takase20000307.github.io/word-frontline-random-boss/>
+- 先生用ガイド: <https://takase20000307.github.io/word-frontline-random-boss/teacher-guide.html>
 
 ## 構成
 
@@ -28,17 +28,17 @@
 
 ### 公開版を変更する
 
-1. [GitHub上のHTML編集画面](https://github.com/takase810/word-frontline-random-boss/edit/main/word-frontline-random-boss.html)を開く。
+1. [GitHub上のHTML編集画面](https://github.com/takase20000307/word-frontline-random-boss/edit/main/word-frontline-random-boss.html)を開く。
 2. 編集後に「Commit changes…」を押す。
 3. GitHub Pagesの自動更新を数分待つ。
 
-より大きな編集には [github.dev](https://github.dev/takase810/word-frontline-random-boss/blob/main/word-frontline-random-boss.html) を使えます。GitHubの履歴から以前の版に戻せるため、編集前にファイルを複製する必要はありません。
+より大きな編集には [github.dev](https://github.dev/takase20000307/word-frontline-random-boss/blob/main/word-frontline-random-boss.html) を使えます。GitHubの履歴から以前の版に戻せるため、編集前にファイルを複製する必要はありません。
 
 ## ロイロノートで配布する
 
 1. 生徒用URLを「Webカード」にする。
 2. 生徒アカウントでURLが開けるか事前確認する。
-3. 学校のWebフィルタを使っている場合は `https://takase810.github.io/word-frontline-random-boss/` を許可する。
+3. 学校のWebフィルタを使っている場合は `https://takase20000307.github.io/word-frontline-random-boss/` を許可する。
 
 公開リポジトリと公開サイトには、生徒名、学籍番号、成績、秘密情報を入れないでください。ゲームの学習記録は各端末のブラウザにだけ保存されます。
 
@@ -60,3 +60,4 @@
 - [公開元を設定する](https://docs.github.com/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 - [GitHub上でファイルを編集する](https://docs.github.com/repositories/working-with-files/managing-files/editing-files)
 - [github.dev Webエディター](https://docs.github.com/codespaces/the-githubdev-web-based-editor)
+
