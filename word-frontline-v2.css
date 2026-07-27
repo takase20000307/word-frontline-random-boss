@@ -1,0 +1,255 @@
+/*
+ * WORD FRONTLINE v2 update styles
+ * Pair-code battle, continuous 12-minute learning, and weak-word runs.
+ * The original game stylesheet remains in the HTML; update-only styles live here.
+ */
+
+.update-badge {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 6px 13px;
+  border: 1px solid #64f0c3;
+  border-radius: 999px;
+  background: #0d493a;
+  color: #c8ffed;
+  font-size: clamp(11px, 1.6vw, 15px);
+  font-weight: 1000;
+  letter-spacing: .1em;
+  box-shadow: 0 0 22px #42e5b455;
+}
+
+.mode-card[data-mode="pair"] {
+  border-color: #8b72ff;
+  background:
+    linear-gradient(135deg, #28205b, #10223a 64%);
+}
+
+.mode-card[data-mode="coverage"],
+.mode-card[data-mode="weak"] {
+  background:
+    linear-gradient(135deg, #123e46, #102238 64%);
+}
+
+.mode-card[data-mode="pair"].selected {
+  border-color: #c1b5ff;
+  box-shadow: inset 0 0 0 2px #806dff66, 0 0 24px #806dff33;
+}
+
+.run-hud,
+.pair-hud {
+  position: absolute;
+  z-index: 10;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(100% - 20px);
+  padding: 6px 10px;
+  border: 1px solid #5ccde9;
+  border-radius: 999px;
+  background: #06121ee8;
+  box-shadow: 0 8px 22px #0008;
+  color: #e9fbff;
+  font-size: 12px;
+  font-weight: 900;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.run-hud strong {
+  color: #75f1c6;
+}
+
+.pair-hud {
+  border-color: #907cff;
+  background: #15113de8;
+}
+
+.pair-hud .pair-local {
+  color: #71f2c4;
+}
+
+.pair-hud .pair-remote {
+  color: #ffcf70;
+}
+
+.pair-hud .pair-round {
+  padding-left: 8px;
+  border-left: 1px solid #6b5db2;
+  color: #ded8ff;
+}
+
+.pair-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.pair-panel {
+  padding: 16px;
+  border: 1px solid #355e79;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #10263a, #091724);
+}
+
+.pair-panel h3 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.pair-panel p {
+  color: #b8cfdf;
+  line-height: 1.65;
+}
+
+.pair-code {
+  display: block;
+  margin: 12px 0;
+  padding: 13px;
+  border: 1px solid #8a78ff;
+  border-radius: 12px;
+  background: #0d0b29;
+  color: #fff;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: clamp(30px, 7vw, 54px);
+  font-weight: 1000;
+  letter-spacing: .16em;
+  text-align: center;
+  user-select: all;
+}
+
+.pair-code-input {
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid #647b91;
+  border-radius: 10px;
+  background: #050d17;
+  color: #fff;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 25px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.pair-status {
+  min-height: 46px;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #496277;
+  border-radius: 9px;
+  background: #07121d;
+  color: #bfd4e4;
+  line-height: 1.5;
+}
+
+.pair-status.ok {
+  border-color: #388c71;
+  background: #0b3026;
+  color: #baffdf;
+}
+
+.pair-status.wait {
+  border-color: #8c7436;
+  background: #30270c;
+  color: #ffefb5;
+}
+
+.pair-status.error {
+  border-color: #a94c5a;
+  background: #3c101a;
+  color: #ffd0d5;
+}
+
+.pair-privacy,
+.learning-data-note {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-left: 4px solid #5cd9ff;
+  border-radius: 8px;
+  background: #0a2536;
+  color: #c9e8f6;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.learning-data-note {
+  border-left-color: #5be3aa;
+  background: #0c2a22;
+}
+
+.pair-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pair-score-final {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 18px 0;
+}
+
+.pair-score-final .score-side {
+  padding: 18px 10px;
+  border: 1px solid #456a83;
+  border-radius: 13px;
+  background: #0d2234;
+  text-align: center;
+}
+
+.pair-score-final .score-side strong {
+  display: block;
+  margin-top: 4px;
+  font-size: clamp(32px, 7vw, 58px);
+}
+
+.pair-score-final .versus {
+  color: #9d8cff;
+  font-size: 22px;
+  font-weight: 1000;
+}
+
+.rapid-result-list {
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px 14px;
+  border: 1px solid #294b63;
+  border-radius: 10px;
+  background: #07131f;
+  color: #cde1ef;
+  line-height: 1.7;
+}
+
+@media (max-width: 699px) {
+  .run-hud,
+  .pair-hud {
+    top: auto;
+    bottom: 44px;
+    max-width: calc(100% - 12px);
+    gap: 5px;
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .pair-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pair-score-final {
+    grid-template-columns: 1fr;
+  }
+
+  .pair-score-final .versus {
+    transform: rotate(90deg);
+  }
+}
