@@ -51,16 +51,48 @@
     <header>
       <p class="eyebrow">TEACHER GUIDE</p>
       <h1>WORD FRONTLINE</h1>
-      <p class="lead">生徒用ゲーム本体は元のHTMLを変更せずに公開しています。授業中の単語変更と、公開版そのものの変更を、どちらもブラウザだけで行えます。</p>
+      <p class="lead">オンライン・ペア対戦、区切りなし約12分の全範囲学習、端末に蓄積したデータからの苦手一斉学習に対応しました。ロイロノートから同じURLを配布できます。</p>
       <div class="actions">
         <a class="button" href="word-frontline-random-boss.html">ゲームを開く</a>
-        <a class="button secondary" href="https://github.com/takase20000307/word-frontline-random-boss/edit/main/word-frontline-random-boss.html">公開版を簡単編集</a>
-        <a class="button secondary" href="https://github.dev/takase20000307/word-frontline-random-boss/blob/main/word-frontline-random-boss.html">高機能エディター</a>
-        <a class="button download" href="word-frontline-random-boss.html" download>元HTMLを保存</a>
+        <a class="button secondary" href="https://github.com/takase20000307/word-frontline-random-boss">公開ファイルを編集</a>
+        <a class="button secondary" href="https://github.dev/takase20000307/word-frontline-random-boss">高機能エディター</a>
+        <a class="button download" href="https://github.com/takase20000307/word-frontline-random-boss/archive/refs/heads/main.zip">オフライン一式ZIP</a>
       </div>
     </header>
 
     <div class="grid">
+      <section>
+        <h2>オンライン・ペア対戦</h2>
+        <ol>
+          <li>2人ともゲームを開き、「オンライン・ペア対戦」を選びます。</li>
+          <li>ホスト役が「ペアコードを作る」を押し、6文字を相手へ伝えます。</li>
+          <li>相手がコードを入力し、「このコードで参加」を押します。</li>
+          <li>ホストが10問・20問・30問を選んで開始します。</li>
+        </ol>
+        <p>2人に同じ問題と四択が出ます。各自が答え、正解数と回答速度による得点を競います。間違えた単語は、それぞれの端末の苦手データへ加わります。</p>
+        <p class="notice ok">氏名・学校名・クラス名は入力しません。ペアコードは対戦ごとに作る一時的なものです。</p>
+      </section>
+
+      <section>
+        <h2>約12分の全範囲学習</h2>
+        <ol>
+          <li>「テスト範囲一斉学習モード」を選びます。</li>
+          <li>223個の英単語を、ステージ結果・ボス戦・ゲームオーバーで止めずに連続学習します。</li>
+          <li>残り時間と残り単語数に応じてテンポを自動調整し、1周を約12分以内に収めます。</li>
+        </ol>
+        <p>同じ英単語に複数の意味・品詞がある場合は、次の周回で別の意味を出します。全員が同じタイミングで開始すると、一斉学習として使えます。</p>
+      </section>
+
+      <section>
+        <h2>苦手一斉学習</h2>
+        <ol>
+          <li>通常学習や全範囲学習で回答します。</li>
+          <li>ミス回数、正答率、反応時間、直近のミス、習熟度が端末内に蓄積されます。</li>
+          <li>「苦手一斉学習モード」を選ぶと、実際にミスした苦手単語だけを区切りなしで復習できます。</li>
+        </ol>
+        <p>苦手が0件なら、データを作るための案内が出ます。「苦手単語」画面からCSVも保存できます。</p>
+      </section>
+
       <section>
         <h2>単語だけ変える</h2>
         <ol>
@@ -74,11 +106,11 @@
       <section>
         <h2>公開版を変える</h2>
         <ol>
-          <li>上の「公開版を簡単編集」を押し、GitHubにログインします。</li>
-          <li>HTMLを編集し、「Commit changes…」を押して保存します。</li>
+          <li>上の「公開ファイルを編集」を押し、GitHubにログインします。</li>
+          <li>変更するファイルを選び、鉛筆アイコンで編集して「Commit changes…」を押します。</li>
           <li>GitHub Pagesが裏側で自動更新します。作業タブを閉じても更新処理は続きます。</li>
         </ol>
-        <p>大きな変更は「高機能エディター」で行えます。間違えてもGitHubの履歴から以前の版へ戻せます。</p>
+        <p><code>word-frontline-random-boss.html</code> は単語と基本ゲーム、<code>word-frontline-v2.js</code> は今回の追加機能、<code>word-frontline-v2.css</code> は追加画面の見た目です。大きな変更は「高機能エディター」を使えます。</p>
       </section>
 
       <section>
@@ -89,6 +121,7 @@
           <li>URLフィルタを使っている場合は <code>takase20000307.github.io</code> を許可します。</li>
         </ol>
         <p>生徒用URL：<br><a href="https://takase20000307.github.io/word-frontline-random-boss/">https://takase20000307.github.io/word-frontline-random-boss/</a></p>
+        <p class="notice">ペア対戦を使う場合は、同じ学校回線の実機2台で事前確認してください。必要に応じて <code>0.peerjs.com</code> のHTTPS通信とWebRTCを許可します。</p>
       </section>
 
       <section>
@@ -98,6 +131,7 @@
           <li>保存先は各端末・各ブラウザです。別端末には自動共有されません。</li>
           <li>履歴を消すと学習記録も消えることがあります。</li>
         </ul>
+        <p>ペア対戦では、問題・回答番号・得点を対戦中だけ相手ブラウザと暗号化通信します。成績データベースは使用しません。</p>
         <p class="notice">公開リポジトリには、生徒名・学籍番号・成績・パスワードなどを記載しないでください。</p>
       </section>
 
@@ -106,9 +140,9 @@
         <h3>サイトの更新</h3>
         <p>GitHubで保存すると、公開処理はGitHub側で進みます。パソコンを閉じても処理は継続します。通常は数分待ってからゲームを再読み込みしてください。</p>
         <h3>ゲーム中に別のタブへ移動したとき</h3>
-        <p>ゲームは自動で一時停止し、戻ると再開します。音声は端末やブラウザの省電力設定により止まることがあるため、音が出ない場合は画面内の再生ボタンを一度押してください。</p>
+        <p>通常学習と一斉学習は自動で一時停止し、戻ると再開します。音声は端末やブラウザの省電力設定により止まることがあるため、音が出ない場合は画面内の再生ボタンを一度押してください。ペア対戦中は2台とも画面を開いたままにしてください。切断された場合は安全に停止し、スタートへ戻れます。</p>
         <h3>オフラインで使う</h3>
-        <p>「元HTMLを保存」で1ファイルとして保存できます。通信できない場面では、そのHTMLをロイロノートで配布する方法も使えます。</p>
+        <p>「オフライン一式ZIP」を展開し、フォルダー内の <code>word-frontline-random-boss.html</code> を開きます。通常学習・全範囲学習・苦手学習は動きますが、ペア対戦だけはインターネット接続が必要です。HTML・JavaScript・CSSを同じフォルダーに置いてください。</p>
       </section>
     </div>
 
@@ -116,4 +150,3 @@
   </main>
 </body>
 </html>
-
