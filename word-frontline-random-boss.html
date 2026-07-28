@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07111f">
-  <title>WORD FRONTLINE — 2/4 PLAYER &amp; WEAKNESS BOSS</title>
+  <title>WORD FRONTLINE — 2/3/4 PLAYER &amp; WEAKNESS BOSS</title>
   <style>
     :root{--bg:#050b14;--panel:#0c1929;--panel2:#10243a;--line:#2d5472;--cyan:#43d9ff;--blue:#2388ff;--blue2:#1464d8;--green:#50eea8;--red:#ff4d58;--orange:#ff9b42;--yellow:#ffe268;--text:#f4fbff;--muted:#9bb5ca;--shadow:0 14px 38px #0009;--choices-height:96px;color-scheme:dark;font-family:Inter,"Noto Sans JP","Yu Gothic UI",Meiryo,system-ui,sans-serif}
     *{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle at 50% -15%,#163856 0,#07111f 43%,#03070d 100%);color:var(--text)}button,input,textarea,select{font:inherit}button{touch-action:manipulation}.hidden{display:none!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -33,7 +33,7 @@
     @media(max-height:600px) and (min-width:700px) and (max-width:999px){.app{--choices-height:108px}}
     @media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
   </style>
-  <link rel="stylesheet" href="word-frontline-v2.css?v=3.0.0">
+  <link rel="stylesheet" href="word-frontline-v2.css?v=3.1.0">
 </head>
 <body>
   <!-- Gameplay HUD: semantic controls stay in HTML while the battlefield is Canvas 2D. -->
@@ -497,6 +497,6 @@ detect	他：を検出する；を見抜く
   function initGame(){loadProgress();initializeWords();if('speechSynthesis'in window)speechSynthesis.addEventListener?.('voiceschanged',()=>loadVoices(true));loadVoices(false);document.body.classList.toggle('reduced-motion',save.settings.reducedMotion);$('#quickRate').value=save.voice.rate;$('#quickVolume').value=save.voice.volume;renderModeGrid();wireEvents();initCanvas();applyResponsiveLayout();renderHUD();renderChoices();runSelfTests();}
   document.addEventListener('DOMContentLoaded',initGame);
   </script>
-  <script src="word-frontline-v2.js?v=3.0.0"></script>
+  <script src="word-frontline-v2.js?v=3.1.0"></script>
 </body>
 </html>
