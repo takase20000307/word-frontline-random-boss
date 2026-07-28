@@ -9,13 +9,13 @@
  *   - a roughly 10-minute whole-range pass followed by one minute of
  *     memorization and two weakness-boss review passes;
  *   - uninterrupted weak-word learning based on accumulated local statistics;
- *   - two- or four-player code battles over encrypted WebRTC data channels.
+ *   - two-, three-, or four-player code battles over encrypted WebRTC data channels.
  */
 
 'use strict';
 
 (() => {
-  const UPDATE_VERSION = '3.0.0';
+  const UPDATE_VERSION = '3.1.0';
   const RAPID_TARGET_MS = 10 * 60 * 1000;
   const RAPID_MEMORY_MS = 60 * 1000;
   const WEAK_BOSS_PASSES = 2;
@@ -23,7 +23,7 @@
   const RAPID_INTRO_MS = 120;
   const PAIR_DEFAULT_ROUNDS = 20;
   const PAIR_TIME_LIMIT = 7;
-  const PAIR_PROTOCOL = 3;
+  const PAIR_PROTOCOL = 4;
   const PAIR_ID_PREFIX = 'wf3-';
   const PAIR_CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
   const PEERJS_ASSET = 'peerjs.min.js';
@@ -122,9 +122,9 @@
     enemy: 1
   };
   MODES.pair = {
-    name: 'オンライン対戦（2人・4人）',
+    name: 'オンライン対戦（2人・3人・4人）',
     short: '対戦',
-    desc: 'ホストが6文字の対戦コードを伝え、2人または4人で同じ問題のスコアを競います。',
+    desc: 'ホストが6文字の対戦コードを伝え、2人・3人・4人で同じ問題のスコアを競います。',
     time: 1,
     enemy: 1
   };
@@ -180,10 +180,10 @@
           <div id="pairLayer" class="modal-layer hidden" role="dialog"
                aria-modal="true" aria-labelledby="pairTitle">
             <div class="modal wide">
-              <h2 id="pairTitle">オンライン対戦（2人・4人）</h2>
+              <h2 id="pairTitle">オンライン対戦（2人・3人・4人）</h2>
               <p>
                 全員がこのページを開きます。ホストが作った6文字のコードを
-                仲間に伝えるだけで、2人または4人のスコア対戦を始められます。
+                仲間に伝えるだけで、2人・3人・4人のスコア対戦を始められます。
               </p>
               <div class="pair-grid">
                 <section class="pair-panel" aria-labelledby="pairHostTitle">
@@ -193,6 +193,7 @@
                     対戦人数
                     <select id="pairPlayerCount">
                       <option value="2" selected>2人対戦</option>
+                      <option value="3">3人対戦</option>
                       <option value="4">4人対戦</option>
                     </select>
                   </label>
@@ -321,16 +322,16 @@
     save.lastUpdateVersion = UPDATE_VERSION;
     saveProgress();
 
-    document.title = 'WORD FRONTLINE — 2/4 PLAYER & WEAKNESS BOSS';
+    document.title = 'WORD FRONTLINE — 2/3/4 PLAYER & WEAKNESS BOSS';
     const badge = document.querySelector('.boss-variant-badge');
     if (badge) {
       badge.className = 'update-badge';
-      badge.textContent = '2 / 4 PLAYER + WEAKNESS BOSS';
+      badge.textContent = '2 / 3 / 4 PLAYER + WEAKNESS BOSS';
     }
     const tagline = document.querySelector('.tagline');
     if (tagline) {
       tagline.textContent =
-        '2人・4人オンライン対戦、約10分の全範囲学習、1分暗記からの苦手ボス2周。';
+        '2人・3人・4人オンライン対戦、約10分の全範囲学習、1分暗記からの苦手ボス2周。';
     }
 
     wireUpdateEvents();
@@ -1444,7 +1445,12 @@
   }
 
   function normalizePairSize(value) {
-    return Number(value) === 4 ? 4 : 2;
+    const size = Number(value);
+    return size === 3 || size === 4 ? size : 2;
+  }
+
+  function shouldFinishPairAfterDisconnect(connectedCount) {
+    return Math.max(0, Number(connectedCount) || 0) < 2;
   }
 
   function createPairPlayer(id, seat, connected = true) {
@@ -1559,6 +1565,7 @@
   function renderPairRoster() {
     const roster = document.querySelector('#pairRoster');
     if (!roster) return;
+    roster.dataset.players = String(pair.maxPlayers);
     const players = serializePairPlayers();
     if (!players.length) {
       roster.classList.add('hidden');
@@ -1569,7 +1576,7 @@
     roster.innerHTML = `
       <div class="pair-roster-title">
         <strong>参加 ${players.filter(player => player.connected).length} / ${pair.maxPlayers}</strong>
-        <span>${pair.maxPlayers === 4 ? '4人対戦' : '2人対戦'}</span>
+        <span>${pair.maxPlayers}人対戦</span>
       </div>
       <div class="pair-roster-chips">
         ${Array.from({ length: pair.maxPlayers }, (_, index) => {
@@ -1606,6 +1613,7 @@
   function renderPairScoreboard() {
     const board = document.querySelector('#pairScoreboard');
     if (!board) return;
+    board.dataset.players = String(pair.maxPlayers);
     const players = serializePairPlayers();
     board.innerHTML = players
       .map(player => `
@@ -1748,7 +1756,7 @@
         const connection = peer.connect(
           `${PAIR_ID_PREFIX}${code.toLowerCase()}`,
           {
-            label: 'word-frontline-battle-v3',
+            label: 'word-frontline-battle-v4',
             serialization: 'json',
             reliable: true,
             metadata: {
@@ -2429,7 +2437,7 @@
       sendPairRoster();
       if (pair.active) {
         announce(`P${String(playerId).slice(1)} CONNECTION LOST`);
-        if (pair.maxPlayers === 2) {
+        if (shouldFinishPairAfterDisconnect(connectedPairPlayers().length)) {
           scheduleGameTask(hostFinishPairMatch, 350);
         } else {
           maybeFinishPairRound();
@@ -2746,11 +2754,19 @@
       () => WEAK_BOSS_PASSES === 2
     );
     test(
-      'オンライン対戦は2人と4人だけ',
+      'オンライン対戦は2人・3人・4人だけ',
       () =>
         normalizePairSize(2) === 2 &&
+        normalizePairSize(3) === 3 &&
         normalizePairSize(4) === 4 &&
-        normalizePairSize(3) === 2
+        normalizePairSize(5) === 2
+    );
+    test(
+      '対戦は2人以上なら切断後も続行',
+      () =>
+        shouldFinishPairAfterDisconnect(1) === true &&
+        shouldFinishPairAfterDisconnect(2) === false &&
+        shouldFinishPairAfterDisconnect(3) === false
     );
     test(
       '苦手ボスデッキは対象集合を増減しない',
