@@ -292,6 +292,16 @@
   margin-top: 8px;
 }
 
+.pair-roster[data-players="2"] .pair-roster-chips,
+.pair-scoreboard[data-players="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pair-roster[data-players="3"] .pair-roster-chips,
+.pair-scoreboard[data-players="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .pair-roster-chip {
   min-width: 0;
   padding: 7px 5px;
