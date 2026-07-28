@@ -1,6 +1,6 @@
 /*
  * WORD FRONTLINE v2 update styles
- * Pair-code battle, continuous 12-minute learning, and weak-word runs.
+ * Two/four-player battles, 10-minute coverage, and weakness-boss review.
  * The original game stylesheet remains in the HTML; update-only styles live here.
  */
 
@@ -24,10 +24,28 @@
     linear-gradient(135deg, #28205b, #10223a 64%);
 }
 
-.mode-card[data-mode="coverage"],
-.mode-card[data-mode="weak"] {
+.mode-card[data-mode="coverage"] {
   background:
     linear-gradient(135deg, #123e46, #102238 64%);
+}
+
+.mode-card[data-mode="weak"] {
+  position: relative;
+  overflow: hidden;
+  border-color: #8174c9;
+  background:
+    linear-gradient(135deg, #261d55, #111b35 64%);
+}
+
+.mode-card[data-mode="weak"]::after {
+  content: "◇ 苦手ボス学習";
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  color: #ffd166;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .08em;
 }
 
 .mode-card[data-mode="pair"].selected {
@@ -66,14 +84,50 @@
 .pair-hud {
   border-color: #907cff;
   background: #15113de8;
+  max-width: min(760px, calc(100% - 20px));
+  white-space: normal;
 }
 
-.pair-hud .pair-local {
-  color: #71f2c4;
+.pair-scoreboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
 }
 
-.pair-hud .pair-remote {
+.pair-score-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid #655aa1;
+  border-radius: 999px;
+  background: #0d0a2b;
+  color: #ded8ff;
+}
+
+.pair-score-chip small {
+  color: #bdb5ec;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.pair-score-chip strong {
   color: #ffcf70;
+}
+
+.pair-score-chip.self {
+  border-color: #71f2c4;
+  background: #0a332c;
+}
+
+.pair-score-chip.self strong {
+  color: #93ffdc;
+}
+
+.pair-score-chip.offline {
+  border-style: dashed;
+  opacity: .58;
 }
 
 .pair-hud .pair-round {
@@ -191,6 +245,77 @@
   margin-top: 10px;
 }
 
+.pair-option-label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0;
+  color: #d9e8f2;
+  font-weight: 900;
+}
+
+.pair-option-label select,
+.pair-action-row select {
+  min-height: 44px;
+  padding: 7px 10px;
+  border: 1px solid #647b91;
+  border-radius: 9px;
+  background: #07131f;
+  color: #fff;
+}
+
+.pair-roster {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid #7062bc;
+  border-radius: 11px;
+  background: #100d31;
+}
+
+.pair-roster-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #e8e4ff;
+  font-size: 12px;
+}
+
+.pair-roster-title span {
+  color: #b8afed;
+}
+
+.pair-roster-chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pair-roster-chip {
+  min-width: 0;
+  padding: 7px 5px;
+  border: 1px dashed #625b87;
+  border-radius: 8px;
+  color: #8e8aa4;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.pair-roster-chip.connected {
+  border-style: solid;
+  border-color: #8b7ee0;
+  background: #242052;
+  color: #f1efff;
+}
+
+.pair-roster-chip.self {
+  border-color: #67e7bd;
+  background: #0b3b30;
+  color: #baffdf;
+}
+
 .pair-score-final {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -230,6 +355,363 @@
   line-height: 1.7;
 }
 
+.pair-ranking {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.pair-rank-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 13px;
+  border: 1px solid #514b85;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #17133e, #0b1c2d);
+}
+
+.pair-rank-card.self {
+  border-color: #61e4b7;
+  box-shadow: inset 4px 0 #61e4b7;
+}
+
+.pair-rank-number {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #332b77;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.pair-rank-card div {
+  min-width: 0;
+}
+
+.pair-rank-card strong,
+.pair-rank-card small {
+  display: block;
+}
+
+.pair-rank-card small {
+  margin-top: 2px;
+  color: #b9cce0;
+}
+
+.pair-rank-card b {
+  color: #ffd166;
+  font-size: clamp(21px, 4vw, 34px);
+}
+
+.weak-boss-mode .battle-shell {
+  border-color: #8d7be6;
+  box-shadow:
+    0 0 0 1px #ffd16633,
+    0 0 46px #6f5bd355,
+    0 20px 55px #000b;
+}
+
+.battle-shell.weak-boss-mode::before {
+  background:
+    repeating-linear-gradient(135deg, #8f7cff0b 0 8px, transparent 8px 20px),
+    radial-gradient(circle at 50% 45%, #573f9c55, transparent 42%),
+    linear-gradient(#8fd3ff0d 1px, transparent 1px),
+    linear-gradient(90deg, #8fd3ff09 1px, transparent 1px);
+  background-size: auto, auto, 30px 30px, 30px 30px;
+}
+
+.weak-boss-mode .question-card {
+  border-color: #d1bdff;
+  background: linear-gradient(180deg, #281f58ef, #0e1332ed);
+  box-shadow:
+    0 7px 28px #0008,
+    0 0 26px #9c82ff55;
+}
+
+.weak-boss-mode .wave-label,
+.weak-boss-mode .question-pos {
+  color: #ffd166;
+}
+
+.weak-boss-mode .run-hud {
+  border-color: #ffd166;
+  background: #171139ee;
+  color: #f3efff;
+}
+
+.weak-boss-mode .run-hud strong {
+  color: #ffd166;
+}
+
+.weak-boss-bar {
+  position: absolute;
+  z-index: 10;
+  top: 26%;
+  left: 13%;
+  right: 13%;
+  color: #fff;
+  pointer-events: none;
+}
+
+.weak-boss-bar-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+  color: #ffe39a;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .1em;
+}
+
+.weak-boss-meter {
+  height: 16px;
+  overflow: hidden;
+  border: 1px solid #d8c574;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(135deg, #211a49 0 8px, #16112f 8px 16px);
+  box-shadow: 0 0 18px #8f7cff66;
+}
+
+.weak-boss-meter i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #8fd3ff, #9b7cff 48%, #ffd166);
+  transition: width .35s ease;
+}
+
+.weak-boss-core {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 58%;
+  width: clamp(108px, 18vw, 190px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  color: #fff2bd;
+  pointer-events: none;
+}
+
+.weak-boss-core > span {
+  position: absolute;
+  inset: 31%;
+  display: grid;
+  place-items: center;
+  color: #fff4c7;
+  font-size: clamp(8px, 1.2vw, 12px);
+  font-weight: 1000;
+  line-height: 1.1;
+  letter-spacing: .07em;
+  text-align: center;
+  text-shadow: 0 0 8px #000;
+}
+
+.weak-core-ring,
+.weak-core-diamond {
+  position: absolute;
+  inset: 13%;
+  border: 3px solid #8fd3ff;
+  border-radius: 50%;
+  box-shadow: 0 0 18px #8fd3ffaa, inset 0 0 18px #8fd3ff55;
+  animation: weakCoreSpin 6s linear infinite;
+}
+
+.weak-core-ring.ring-two {
+  inset: 3%;
+  border-color: #9b7cff;
+  border-style: dashed;
+  animation-direction: reverse;
+  animation-duration: 8s;
+}
+
+.weak-core-diamond {
+  inset: 29%;
+  border-radius: 8px;
+  border-color: #ffd166;
+  background: radial-gradient(circle, #fff8d6, #ffd166 22%, #6d53c7 64%);
+  transform: rotate(45deg);
+  animation: weakCorePulse 1.55s ease-in-out infinite;
+}
+
+.weak-boss-core.core-hit {
+  animation: weakCoreHit .55s ease;
+}
+
+.weak-boss-core.core-miss {
+  filter: saturate(.3) brightness(1.5);
+}
+
+.weak-memory-layer {
+  background:
+    radial-gradient(circle at 50% 15%, #463681f4, #120f2bf9 60%),
+    #0a0819;
+}
+
+.weak-memory-card {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  width: min(1040px, 100%);
+  max-height: calc(100dvh - 28px);
+  border-color: #9c8dea;
+  background: #151135f7;
+  box-shadow: 0 24px 80px #000, 0 0 70px #7f68d844;
+}
+
+.weak-memory-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.weak-memory-title-row h2 {
+  margin: 2px 0 0;
+}
+
+.weak-memory-kicker {
+  margin: 0;
+  color: #ffd166;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+}
+
+.weak-memory-clock {
+  flex: 0 0 auto;
+  min-width: 112px;
+  padding: 8px 12px;
+  border: 1px solid #ffd166;
+  border-radius: 12px;
+  background: #231b4a;
+  text-align: center;
+}
+
+.weak-memory-clock span,
+.weak-memory-clock strong {
+  display: block;
+}
+
+.weak-memory-clock span {
+  color: #d9d3f2;
+  font-size: 10px;
+}
+
+.weak-memory-clock strong {
+  color: #fff2b8;
+  font-size: clamp(28px, 6vw, 48px);
+  line-height: 1;
+}
+
+.weak-memory-progress {
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid #655b9d;
+  border-radius: 999px;
+  background: #080719;
+}
+
+.weak-memory-progress i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #8fd3ff, #ffd166);
+  transition: width .25s linear;
+}
+
+.weak-memory-list {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  align-content: start;
+  margin-top: 10px;
+  padding: 4px;
+}
+
+.weak-memory-item {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid #61579b;
+  border-left: 4px solid #ffd166;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(135deg, #221b4c 0 8px, #1c173f 8px 16px);
+}
+
+.weak-memory-number {
+  color: #9fdcff;
+  font-weight: 1000;
+  text-align: center;
+}
+
+.weak-memory-item strong,
+.weak-memory-item span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.weak-memory-item strong {
+  color: #fff;
+  font-size: clamp(18px, 2.6vw, 25px);
+}
+
+.weak-memory-item span {
+  margin-top: 2px;
+  color: #e1dcf3;
+  font-size: 12px;
+}
+
+.weak-memory-speak {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #8fd3ff;
+  border-radius: 50%;
+  background: #163858;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 1000;
+}
+
+.weak-memory-status {
+  margin: 8px 0 0;
+  color: #fff0b8;
+  font-weight: 900;
+  text-align: center;
+}
+
+.weakness-result-list {
+  border-color: #8474d4;
+  border-left: 5px solid #ffd166;
+  background: #171234;
+}
+
+@keyframes weakCoreSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes weakCorePulse {
+  0%, 100% { transform: rotate(45deg) scale(.88); filter: brightness(.9); }
+  50% { transform: rotate(45deg) scale(1.08); filter: brightness(1.35); }
+}
+
+@keyframes weakCoreHit {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  35% { transform: translate(-50%, -50%) scale(1.22); filter: brightness(1.8); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
 @media (max-width: 699px) {
   .run-hud,
   .pair-hud {
@@ -245,11 +727,115 @@
     grid-template-columns: 1fr;
   }
 
+  .pair-hud {
+    width: calc(100% - 12px);
+    flex-wrap: wrap;
+  }
+
+  .pair-scoreboard {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .pair-score-chip {
+    min-width: 0;
+    justify-content: center;
+    padding: 2px 4px;
+  }
+
+  .pair-score-chip small {
+    display: none;
+  }
+
+  .pair-roster-chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .pair-score-final {
     grid-template-columns: 1fr;
   }
 
   .pair-score-final .versus {
     transform: rotate(90deg);
+  }
+
+  .weak-boss-bar {
+    top: 26%;
+    left: 8%;
+    right: 8%;
+  }
+
+  .weak-boss-core {
+    top: 57%;
+    width: clamp(92px, 28vw, 138px);
+  }
+
+  .weak-memory-layer {
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+
+  .weak-memory-card {
+    width: 100%;
+    max-height: none;
+    height: 100%;
+    padding: 14px 12px;
+  }
+
+  .weak-memory-title-row {
+    align-items: flex-start;
+  }
+
+  .weak-memory-title-row h2 {
+    font-size: 21px;
+  }
+
+  .weak-memory-clock {
+    min-width: 88px;
+    padding: 7px;
+  }
+
+  .weak-memory-list {
+    grid-template-columns: 1fr;
+  }
+
+  .weak-memory-item {
+    grid-template-columns: 26px minmax(0, 1fr) 44px;
+    padding: 8px 7px;
+  }
+
+  .pair-rank-card {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    padding: 9px;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .weak-memory-card > p {
+    margin: 4px 0;
+    font-size: 12px;
+  }
+
+  .weak-memory-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .weak-memory-clock strong {
+    font-size: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weak-core-ring,
+  .weak-core-diamond,
+  .weak-boss-core,
+  .weak-boss-meter i,
+  .weak-memory-progress i {
+    animation: none !important;
+    transition: none !important;
   }
 }
