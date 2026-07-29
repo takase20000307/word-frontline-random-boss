@@ -15,7 +15,7 @@
 'use strict';
 
 (() => {
-  const UPDATE_VERSION = '3.1.0';
+  const UPDATE_VERSION = '3.2.0';
   const RAPID_TARGET_MS = 10 * 60 * 1000;
   const RAPID_MEMORY_MS = 60 * 1000;
   const WEAK_BOSS_PASSES = 2;
@@ -2564,11 +2564,13 @@
   }
 
   function showPairHud() {
+    document.querySelector('#battleShell')?.classList.add('pair-layout');
     document.querySelector('#pairHud')?.classList.remove('hidden');
     updatePairHud();
   }
 
   function hidePairHud() {
+    document.querySelector('#battleShell')?.classList.remove('pair-layout');
     document.querySelector('#pairHud')?.classList.add('hidden');
   }
 
