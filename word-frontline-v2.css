@@ -1,6 +1,6 @@
 /*
  * WORD FRONTLINE v2 update styles
- * Two/four-player battles, 10-minute coverage, and weakness-boss review.
+ * Two/three/four-player battles, 10-minute coverage, and weakness-boss review.
  * The original game stylesheet remains in the HTML; update-only styles live here.
  */
 
@@ -720,6 +720,93 @@
   0% { transform: translate(-50%, -50%) scale(1); }
   35% { transform: translate(-50%, -50%) scale(1.22); filter: brightness(1.8); }
   100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/*
+ * PC battle layout
+ * Keep the live scoreboard, question, battlefield controls, and answers in
+ * separate visual bands. The tall-screen layout uses two wide answer columns
+ * so long Japanese meanings remain readable without changing the phone UI.
+ */
+@media (min-width: 1000px) {
+  .battle-shell.pair-layout .pair-hud {
+    top: 8px;
+  }
+
+  .battle-shell.pair-layout .question-card {
+    top: 72px;
+    width: min(78%, 520px);
+  }
+
+  .battle-shell.pair-layout .battle-hud {
+    top: auto;
+    bottom: 8px;
+  }
+}
+
+@media (min-width: 1000px) and (min-height: 701px) {
+  .app {
+    --choices-height: clamp(150px, 18svh, 176px);
+  }
+
+  #choices {
+    width: calc(100% - 480px);
+    margin-inline-start: 220px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+
+  #choices .choice {
+    padding: 8px 14px 8px 48px;
+    font-size: clamp(18px, 1.45vw, 22px);
+    line-height: 1.24;
+  }
+
+  #choices .choice.correct,
+  #choices .choice.wrong {
+    padding-inline-end: 78px;
+  }
+}
+
+@media (min-width: 1000px) and (max-height: 700px) {
+  .app {
+    --choices-height: clamp(76px, 13svh, 96px);
+  }
+}
+
+@media (min-width: 700px) and (max-width: 999px) {
+  .battle-shell.pair-layout .pair-hud {
+    top: 8px;
+    bottom: auto;
+    width: calc(100% - 12px);
+    max-width: calc(100% - 12px);
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 5px 8px;
+  }
+
+  .battle-shell.pair-layout .pair-scoreboard {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .battle-shell.pair-layout .pair-scoreboard[data-players="2"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .battle-shell.pair-layout .pair-scoreboard[data-players="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .battle-shell.pair-layout .pair-score-chip {
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .battle-shell.pair-layout .question-card {
+    top: 86px;
+  }
 }
 
 @media (max-width: 699px) {
