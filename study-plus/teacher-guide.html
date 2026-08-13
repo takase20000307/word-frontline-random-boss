@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <title>WORD FRONTLINE STUDY PLUS 先生用ガイド</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, "Noto Sans JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif; --cyan:#43d9ff; --green:#58efb3; --yellow:#ffd166; --line:#2c526d; --panel:#0d1e2e; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 50% -10%,#173c5b 0,#07111f 38%,#03070d 100%); color: #eefaff; line-height: 1.75; }
+    a { color: #71e4ff; }
+    .wrap { width: min(1080px, calc(100% - 28px)); margin: 0 auto; padding: 28px 0 70px; }
+    .hero { border: 1px solid #3a7799; border-radius: 24px; background: linear-gradient(145deg,rgba(18,54,78,.96),rgba(6,17,28,.97)); box-shadow: 0 28px 80px #0008; padding: clamp(24px,5vw,54px); }
+    .eyebrow { margin: 0 0 7px; color: var(--cyan); font-size: 12px; font-weight: 1000; letter-spacing: .16em; }
+    h1 { margin: 0; font-size: clamp(34px,7vw,70px); line-height: .98; letter-spacing: .02em; }
+    h1 span { display: block; color: var(--cyan); }
+    .lead { max-width: 820px; color: #c3d7e5; font-size: clamp(16px,2vw,20px); }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 45px; border: 1px solid #79ebff; border-radius: 10px; background: linear-gradient(#1596cf,#0a639f); color: #fff; padding: 9px 15px; text-decoration: none; font-weight: 900; }
+    .button.secondary { border-color: #4b6d83; background: #102538; }
+    nav { position: sticky; top: 0; z-index: 4; display: flex; gap: 7px; overflow: auto; margin: 18px 0; border: 1px solid #27475d; border-radius: 12px; background: #07131feb; backdrop-filter: blur(8px); padding: 8px; scrollbar-width: thin; }
+    nav a { flex: 0 0 auto; border-radius: 8px; color: #cfe4f1; padding: 7px 10px; text-decoration: none; font-size: 13px; font-weight: 900; }
+    nav a:hover { background: #12324a; color: #fff; }
+    section { margin-top: 18px; border: 1px solid #284960; border-radius: 18px; background: linear-gradient(150deg,#0d1e2ef5,#081522f5); padding: clamp(18px,3vw,30px); }
+    h2 { margin: 0 0 12px; color: #fff; font-size: clamp(23px,4vw,32px); }
+    h3 { margin: 24px 0 7px; color: var(--cyan); }
+    p { margin: 9px 0; }
+    ul, ol { padding-left: 1.4em; }
+    li + li { margin-top: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+    .card { border: 1px solid #2f536b; border-radius: 12px; background: #102438; padding: 14px; }
+    .card strong { display: block; color: #fff; font-size: 18px; }
+    .card small { color: #adc6d7; }
+    .callout { margin: 14px 0; border-left: 4px solid var(--cyan); border-radius: 8px; background: #0a2b40; padding: 12px 14px; }
+    .callout.warn { border-color: var(--yellow); background: #332814; color: #ffe5a5; }
+    .callout.good { border-color: var(--green); background: #0d3329; color: #c9ffeb; }
+    .secret { border: 1px dashed #8b69d9; background: linear-gradient(135deg,#241b43,#111c2b); }
+    .secret strong { color: #d8c6ff; }
+    .table-wrap { overflow: auto; border: 1px solid #2b4b60; border-radius: 11px; }
+    table { width: 100%; border-collapse: collapse; min-width: 660px; font-size: 14px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #243f52; text-align: left; vertical-align: top; }
+    th { background: #123047; color: #bdeeff; }
+    td:nth-child(2), td:nth-child(3) { white-space: nowrap; }
+    code { border: 1px solid #31516a; border-radius: 5px; background: #050d15; color: #c6efff; padding: 1px 5px; }
+    footer { margin-top: 25px; color: #8eabbf; text-align: center; font-size: 12px; }
+    @media (max-width:760px) { .grid { grid-template-columns:1fr; } .wrap { width:min(100% - 18px,1080px); padding-top:10px; } .hero { border-radius:16px; } nav { top: 4px; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">TEACHER GUIDE · VERSION 4.0</p>
+      <h1>WORD <span>FRONTLINE STUDY PLUS</span></h1>
+      <p class="lead">従来版に触れず、別URLに追加した「テスト範囲別」の新版です。全1,450語、学習継続日数、裏モードのリスニング練習に対応します。</p>
+      <div class="actions">
+        <a class="button" href="word-frontline-study-plus.html">生徒用ゲームを開く</a>
+        <a class="button secondary" href="listening.html">リスニングラボを開く</a>
+        <a class="button secondary" href="https://github.com/takase20000307/word-frontline-random-boss/tree/main/study-plus">公開ファイルを編集</a>
+        <a class="button secondary" href="https://github.dev/takase20000307/word-frontline-random-boss/tree/main/study-plus">github.dev</a>
+      </div>
+    </header>
+
+    <nav aria-label="目次">
+      <a href="#quick">授業で使う</a>
+      <a href="#ranges">テスト範囲</a>
+      <a href="#streak">継続日数</a>
+      <a href="#listening">裏モード</a>
+      <a href="#privacy">保存・通信</a>
+      <a href="#maintain">修正方法</a>
+    </nav>
+
+    <section id="quick">
+      <h2>授業での最短手順</h2>
+      <ol>
+        <li>先生が生徒用URLをロイロノートのWebカードで配布する。</li>
+        <li>生徒がスタート画面の「今回のテスト範囲」を押し、指定のカードを選ぶ。</li>
+        <li>「ゲーム開始」から「テスト範囲一斉学習モード」を選ぶ。</li>
+        <li>一周後、間違えた単語を1分暗記し、色と演出の異なる「苦手ボス」を2周する。</li>
+      </ol>
+      <div class="callout good">スタート画面に現在の範囲と語数が常に表示されます。先生は生徒の画面を一度見て、同じ範囲が表示されているか確認できます。</div>
+      <h3>オンライン対戦</h3>
+      <p>2人・3人・4人対戦は従来と同じです。ホストが人数を選ん6文字のコードを作り、参加者が入力します。ホストの選択範囲から問題が出ます。授業前に実際の学校回線と3台または4台で接続を試してください。</p>
+    </section>
+
+    <section id="ranges">
+      <h2>テスト範囲一覧</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>カード</th><th>Lesson</th><th>語数</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td>第1回・GW課題</td><td>1〜11</td><td>231</td><td>3人の兄弟と少女／プラスチックストローをやめる理由</td></tr>
+            <tr><td>第2回</td><td>12〜21</td><td>229</td><td>時計と人の暮らし／迷信を信じますか？</td></tr>
+            <tr><td>第3回・夏休み課題</td><td>22〜31</td><td>223</td><td>凧の歴史／大気汚染とミツバチ／グレート・ソルト・レイク</td></tr>
+            <tr><td>第4回</td><td>32〜39</td><td>145</td><td>音楽と人の感情</td></tr>
+            <tr><td>第5回</td><td>40〜49</td><td>226</td><td>あるジャーナリストの苦難</td></tr>
+            <tr><td>第6回</td><td>50〜56</td><td>141</td><td>「進行していくディナー」って何？／長寿の秘訣（1）〜（5）</td></tr>
+            <tr><td>第7回</td><td>57〜58</td><td>42</td><td>長寿の秘訣（6）〜（7）</td></tr>
+            <tr><td>第8回・冬休み課題</td><td>59〜62</td><td>83</td><td>鳥の卵は優れもの</td></tr>
+            <tr><td>第9回</td><td>63〜68</td><td>130</td><td>子供の世界観を決めるもの</td></tr>
+            <tr><td>第二回単コン・高校入試中課題</td><td>1〜68</td><td>1,450</td><td>範囲すべて</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">1,450語の「全範囲」を1周するには約62分かかります。10分前後の授業利用では、第1〜9回のいずれかを選んでください。</div>
+    </section>
+
+    <section id="streak">
+      <h2>学習継続日数</h2>
+      <div class="grid">
+        <div class="card"><strong>1問で達成</strong><small>単語またはリスニングに1問答えると、その日の学習が成立します。開くだけでは加算しません。</small></div>
+        <div class="card"><strong>途切れたら0日</strong><small>2日以上空けて戻ると0日表示になり、次の回答で1日目から再開します。</small></div>
+        <div class="card"><strong>22日目からお祝い</strong><small>21日を超えると「先生や保護者の方に自慢しよう！」と表示します。</small></div>
+      </div>
+      <p>記録はブラウザの端末内保存です。Chromeのサイトデータを削除する、シークレットモードを使う、別端末や別ブラウザに変えると引き継げません。「記録リセット」のダイアログには、継続日数を一緒に消すチェック欄があります。</p>
+    </section>
+
+    <section id="listening">
+      <h2>裏モード・リスニング</h2>
+      <div class="card secret">
+        <strong>生徒への開き方</strong>
+        <small>スタート画面のWORD FRONTLINEロゴを2.6秒以内に5回タップします。PCでは英字の <code>listen</code> を順番に押しても開きます。先生は上の「リスニングラボを開く」から直接入れます。</small>
+      </div>
+      <h3>3つのモード</h3>
+      <ul>
+        <li><strong>共通テスト対策:</strong> 短い対話、時刻・条件、情報統合。前半は2回、後半は1回まで再生。</li>
+        <li><strong>英検準2級対策:</strong> 応答文選択、対話、短い説明。全問1回再生。</li>
+        <li><strong>英検2級対策:</strong> 対話に加え、学校・環境・技術など社会的話題の要点把握。全問1回再生。</li>
+      </ul>
+      <div class="callout">実際の過去問は「無料で見られる」ことと「別サイトに転載できる」ことが同じではありません。このラボは公式の問題数・再生回数・技能の種類だけを参考にし、英文、人物、場面、数値、誤答、解説はすべて新規作成しています。</div>
+      <p>参考: <a href="https://www.dnc.ac.jp/kyotsu/kakomondai/r8/r8_honshiken_mondai.html">大学入試センター　令和8年度本試験</a> ／ <a href="https://www.eiken.or.jp/eiken/exam/grade_p2/solutions.html">英検準2級の試験内容</a> ／ <a href="https://www.eiken.or.jp/eiken/exam/grade_2/solutions.html">英検2級の試験内容</a> ／ <a href="https://www.eiken.or.jp/sitepolicy/index.html">英検サイトポリシー</a></p>
+      <p>本サイトは大学入試センターまたは日本英語検定協会の制作・公認教材ではありません。</p>
+    </section>
+
+    <section id="privacy">
+      <h2>保存・通信・費用</h2>
+      <ul>
+        <li>単語の成績、苦手データ、継続日数は各端末のブラウザ内だけに保存します。</li>
+        <li>氏名、学校名、クラス名の入力欄はなく、サーバーへ送信しません。</li>
+        <li>新版の保存先は従来版と別です。新版を開いたりリセットしたりしても、従来版のファイルと学習データは変更しません。</li>
+        <li>Firebaseと有料サーバーは使いません。GitHub Pages、端末内保存、ブラウザの英語合成音声のみで動きます。</li>
+        <li>オンライン対戦だけは無料のPeerJS/WebRTC通信を使うため、学校回線の制限によっては接続できません。</li>
+      </ul>
+    </section>
+
+    <section id="maintain">
+      <h2>後から修正する</h2>
+      <h3>単語とテスト範囲</h3>
+      <p>GitHubの <code>word-frontline-data.js</code> を編集します。各単語は <code>id</code>、<code>lesson</code>、<code>english</code>、<code>pos</code>、<code>meaning</code> に分かれています。範囲カードは同じファイル上部の <code>ranges</code> で修正できます。</p>
+      <h3>リスニング問題</h3>
+      <p><code>listening-data.js</code> の各問題を編集します。英文と選択肢は必ずオリジナルで追加し、実際の過去問の文面、音声、図版をコピーしないでください。</p>
+      <h3>ブラウザでの公開更新</h3>
+      <ol>
+        <li><a href="https://github.com/takase20000307/word-frontline-random-boss/tree/main/study-plus">GitHubの新版フォルダ</a>で対象ファイルを開く。</li>
+        <li>鉛筆アイコン、または <a href="https://github.dev/takase20000307/word-frontline-random-boss/tree/main/study-plus">github.dev</a> で修正する。</li>
+        <li><code>Commit changes…</code> で保存し、GitHub Pagesの更新を数分待つ。</li>
+      </ol>
+      <div class="callout good">ファイルが分離されているため、単語を直すときにゲームエンジンやCSSを触る必要はありません。編集前に対象ファイルをダウンロードしておくと安心です。</div>
+    </section>
+
+    <footer>WORD FRONTLINE STUDY PLUS · 端末内保存 · Firebase不使用 · 従来版は無変更</footer>
+  </main>
+</body>
+</html>

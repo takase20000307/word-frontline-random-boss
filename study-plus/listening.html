@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090d1a">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>LISTENING LAB | WORD FRONTLINE STUDY PLUS</title>
+  <meta name="description" content="共通テスト・英検準2級・英検2級の形式を参考にした、完全オリジナルの英語リスニング練習。">
+  <link rel="stylesheet" href="listening.css?v=1.0.0">
+  <script src="listening-data.js?v=1.0.0" defer></script>
+  <script src="study-streak.js?v=1.0.0" defer></script>
+  <script src="listening.js?v=1.0.0" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">本文へ移動</a>
+
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="back-link" href="word-frontline-study-plus.html" aria-label="単語ゲームへ戻る">
+      <span aria-hidden="true">←</span>
+      <span>単語ゲームへ</span>
+    </a>
+    <div class="brand" aria-label="Word Frontline Listening Lab">
+      <span class="brand-mark" aria-hidden="true">◉</span>
+      <span><b>LISTENING LAB</b><small>WORD FRONTLINE / SECRET CHANNEL</small></span>
+    </div>
+    <div class="streak-chip" id="streakChip" aria-label="現在の学習継続日数">
+      <span aria-hidden="true">🔥</span><b id="streakDays">0</b><span>日</span>
+    </div>
+  </header>
+
+  <main id="mainContent" class="shell">
+    <section id="selectScreen" class="screen" aria-labelledby="labTitle">
+      <div class="hero">
+        <div class="secret-label"><span aria-hidden="true">◆</span> 裏モード解放</div>
+        <p class="eyebrow">AUDIO INTELLIGENCE TRAINING</p>
+        <h1 id="labTitle">耳でつかむ、<br><span>英語の作戦情報。</span></h1>
+        <p class="hero-copy">端末の英語音声を使い、短い対話から情報統合まで段階的に練習します。答えるまで英文スクリプトは表示されません。</p>
+      </div>
+
+      <aside class="original-notice" aria-label="問題についての重要なお知らせ">
+        <span class="notice-icon" aria-hidden="true">✓</span>
+        <div>
+          <strong>問題・英文はすべて本サイト独自のオリジナルです</strong>
+          <p>公式の出題形式・技能区分を学習設計の参考にしていますが、実際の過去問、音源、選択肢の転載・改変ではありません。公式問題ではありません。</p>
+        </div>
+      </aside>
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">SELECT MISSION</p>
+          <h2>練習モードを選ぶ</h2>
+        </div>
+        <p>各モード6問 / 回答すると今日の継続日数に記録</p>
+      </div>
+      <div id="modeGrid" class="mode-grid" aria-label="リスニング練習モード"></div>
+
+      <section class="how-card" aria-labelledby="howTitle">
+        <div>
+          <p class="eyebrow">HOW TO PLAY</p>
+          <h2 id="howTitle">音だけを手掛かりに回答</h2>
+        </div>
+        <ol>
+          <li><b>選択肢を先読み</b><span>表示された準備時間でポイントを確認。</span></li>
+          <li><b>英語音声を再生</b><span>再生回数には問題ごとの上限があります。</span></li>
+          <li><b>回答して復習</b><span>正解後に英文と日本語解説を確認。</span></li>
+        </ol>
+      </section>
+    </section>
+
+    <section id="questionScreen" class="screen" aria-labelledby="questionTitle" hidden>
+      <div class="mission-bar">
+        <button id="exitBtn" class="text-button" type="button">← モード選択</button>
+        <div class="mission-progress">
+          <div class="progress-copy"><span id="modeName">LISTENING</span><b id="progressText">1 / 6</b></div>
+          <div class="progress-track" role="progressbar" aria-label="問題の進み具合" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0">
+            <span id="progressFill"></span>
+          </div>
+        </div>
+        <div class="score-box"><small>SCORE</small><b id="scoreText">0</b></div>
+      </div>
+
+      <article class="question-card">
+        <div class="question-meta">
+          <span id="partLabel">短い対話</span>
+          <span id="levelLabel">A2</span>
+          <span id="skillLabel">詳細理解</span>
+        </div>
+        <p class="scene-label"><span aria-hidden="true">⌖</span> <span id="sceneText">学校</span></p>
+        <h1 id="questionTitle">Listen and choose the best answer.</h1>
+
+        <div class="audio-console">
+          <div class="wave" id="wave" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <button id="playBtn" class="play-button" type="button">
+            <span class="play-icon" aria-hidden="true">▶</span>
+            <span><b id="playButtonLabel">準備して再生</b><small id="playCountText">残り2回</small></span>
+          </button>
+          <div class="audio-controls">
+            <label for="rateControl">速度 <output id="rateValue">0.95×</output></label>
+            <input id="rateControl" type="range" min="0.80" max="1.05" step="0.05" value="0.95">
+          </div>
+          <p id="audioStatus" class="audio-status" role="status" aria-live="polite">再生ボタンを押すと準備時間が始まります。</p>
+        </div>
+
+        <div id="responseHint" class="response-hint" hidden>
+          応答文は音声で読み上げます。画面では番号だけを選んでください。
+        </div>
+        <div id="optionList" class="option-list" role="group" aria-label="解答の選択肢"></div>
+
+        <section id="feedbackPanel" class="feedback" aria-live="polite" hidden>
+          <div class="feedback-head">
+            <span id="feedbackMark" aria-hidden="true">✓</span>
+            <div><b id="feedbackTitle">正解！</b><p id="feedbackExplanation"></p></div>
+          </div>
+        </section>
+
+        <details id="transcriptPanel" class="transcript" hidden>
+          <summary>英文スクリプトを確認</summary>
+          <div id="transcriptText"></div>
+        </details>
+
+        <button id="nextBtn" class="next-button" type="button" hidden>次の問題へ <span aria-hidden="true">→</span></button>
+      </article>
+    </section>
+
+    <section id="resultScreen" class="screen" aria-labelledby="resultTitle" hidden>
+      <div class="result-hero">
+        <p class="eyebrow">MISSION COMPLETE</p>
+        <div id="resultRing" class="result-ring" aria-hidden="true"><span id="resultPercent">0%</span></div>
+        <h1 id="resultTitle">リスニング訓練完了</h1>
+        <p id="resultSummary">6問中0問正解</p>
+        <div id="resultMessage" class="result-message"></div>
+      </div>
+
+      <section class="review-card" aria-labelledby="reviewTitle">
+        <div class="section-heading compact">
+          <div><p class="eyebrow">DEBRIEF</p><h2 id="reviewTitle">回答を振り返る</h2></div>
+        </div>
+        <ol id="reviewList" class="review-list"></ol>
+      </section>
+
+      <div class="result-actions">
+        <button id="retryBtn" class="primary-button" type="button">同じモードに再挑戦</button>
+        <button id="homeBtn" class="secondary-button" type="button">別のモードを選ぶ</button>
+        <a class="secondary-button link-button" href="word-frontline-study-plus.html">単語ゲームへ戻る</a>
+      </div>
+    </section>
+
+    <section class="sources" aria-labelledby="sourcesTitle">
+      <div>
+        <p class="eyebrow">OFFICIAL REFERENCES</p>
+        <h2 id="sourcesTitle">形式確認に使った公式情報</h2>
+        <p>リンク先の問題や音声を本サイト内へ複製していません。最新情報・本番形式は各公式サイトで確認してください。</p>
+      </div>
+      <ul>
+        <li><a href="https://www.dnc.ac.jp/kyotsu/kako_shiken_jouhou/r8/index.html" target="_blank" rel="noopener noreferrer">大学入試センター：令和8年度試験</a></li>
+        <li><a href="https://www.eiken.or.jp/eiken/exam/grade_p2/solutions.html" target="_blank" rel="noopener noreferrer">英検：準2級の試験内容</a></li>
+        <li><a href="https://www.eiken.or.jp/eiken/exam/grade_2/solutions.html" target="_blank" rel="noopener noreferrer">英検：2級の試験内容</a></li>
+        <li><a href="https://www.eiken.or.jp/sitepolicy/index.html" target="_blank" rel="noopener noreferrer">日本英語検定協会：サイトポリシー</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <noscript><p class="noscript">このページにはJavaScriptが必要です。ブラウザの設定でJavaScriptを有効にしてください。</p></noscript>
+</body>
+</html>
