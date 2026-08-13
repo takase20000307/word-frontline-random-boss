@@ -2,9 +2,23 @@
 'use strict';
 
 (() => {
-  const PLUS_VERSION = '4.0.0';
+  const PLUS_VERSION = '4.1.0';
   const data = window.WordFrontlineData;
   const streak = window.WordFrontlineStreak;
+  // Each preset stays active through its test's final day. The next preset
+  // becomes the automatic default on the following local calendar day.
+  const AUTO_RANGE_WINDOWS = Object.freeze([
+    { through: 512, id: 'exam-1' },
+    { through: 623, id: 'exam-2' },
+    { through: 902, id: 'exam-3' },
+    { through: 929, id: 'exam-4' },
+    { through: 1027, id: 'exam-5' },
+    { through: 1117, id: 'exam-6' },
+    { through: 1215, id: 'exam-7' },
+    { through: 1313, id: 'exam-8' },
+    { through: 1409, id: 'exam-9' },
+    { through: 1531, id: 'all' }
+  ]);
 
   if (!data?.words?.length || !data?.ranges?.length) {
     console.error('Study Plus vocabulary could not be loaded.');
@@ -29,8 +43,18 @@
 
   document.addEventListener('DOMContentLoaded', initializePlus);
 
-  function defaultRange() {
-    return data.ranges.find(range => range.id === 'exam-1') || data.ranges[0];
+  function automaticRangeForDate(date = new Date()) {
+    const month = date.getMonth() + 1;
+    const academicMonthDay = (month < 4 ? month + 12 : month) * 100 + date.getDate();
+    const rangeWindow = AUTO_RANGE_WINDOWS.find(candidate => academicMonthDay <= candidate.through);
+    const rangeId = rangeWindow?.id || 'exam-1';
+    return data.ranges.find(range => range.id === rangeId)
+      || data.ranges.find(range => range.id === 'exam-1')
+      || data.ranges[0];
+  }
+
+  function defaultRange(date = new Date()) {
+    return automaticRangeForDate(date);
   }
 
   function selectedRange() {
@@ -74,9 +98,15 @@
 
   function installOverrides() {
     initializeWords = function initializeStudyPlusWords() {
-      save.selectedRangeId = data.ranges.some(range => range.id === save.selectedRangeId)
-        ? save.selectedRangeId
-        : defaultRange().id;
+      const hasValidRange = data.ranges.some(range => range.id === save.selectedRangeId);
+      // Pre-4.1 saves did not record intent. Preserve a non-default choice as
+      // manual, but treat the historical exam-1 default as automatic.
+      const legacyManualRange = !save.rangeSelectionMode
+        && hasValidRange
+        && save.selectedRangeId !== 'exam-1';
+      const keepManualRange = (save.rangeSelectionMode === 'manual' || legacyManualRange) && hasValidRange;
+      save.selectedRangeId = keepManualRange ? save.selectedRangeId : defaultRange().id;
+      save.rangeSelectionMode = keepManualRange ? 'manual' : 'auto';
       save.activeWordSource = save.activeWordSource === 'custom' && save.importedWords
         ? 'custom'
         : 'official';
@@ -152,9 +182,11 @@
 
     resetProgress = function resetProgressStudyPlus(keepWords = true) {
       const rangeId = save?.selectedRangeId || defaultRange().id;
+      const rangeSelectionMode = save?.rangeSelectionMode === 'manual' ? 'manual' : 'auto';
       const source = keepWords && save?.importedWords ? save.activeWordSource : 'official';
       original.resetProgress(keepWords);
       save.selectedRangeId = rangeId;
+      save.rangeSelectionMode = rangeSelectionMode;
       save.activeWordSource = source;
       saveProgress();
       initializeWords();
@@ -172,6 +204,15 @@
       test('Selected range count matches active senses', !isOfficialSource() || senseList.length === expected);
       test('Selected range has safe four-choice capacity', senseList.length >= 4);
       test('Study Plus uses an independent vocabulary source', data.version === '2026.08.13-1450');
+      test('Mid-August automatically selects exam 3', automaticRangeForDate(new Date(2026, 7, 13)).id === 'exam-3');
+      test('Winter and January range boundaries are correct',
+        automaticRangeForDate(new Date(2026, 11, 16)).id === 'exam-8'
+        && automaticRangeForDate(new Date(2027, 0, 13)).id === 'exam-8'
+        && automaticRangeForDate(new Date(2027, 0, 14)).id === 'exam-9'
+        && automaticRangeForDate(new Date(2027, 1, 10)).id === 'all');
+      test('Summer range starts after exam 2',
+        automaticRangeForDate(new Date(2026, 5, 23)).id === 'exam-2'
+        && automaticRangeForDate(new Date(2026, 5, 24)).id === 'exam-3');
       for (const result of streak?.runSelfTests?.() || []) tests.push(result);
       const passed = tests.filter(testCase => testCase.ok).length;
       console.group(`WORD FRONTLINE Study Plus tests: ${passed}/${tests.length}`);
@@ -224,10 +265,11 @@
               </div>
               <button id="rangeCloseTop" class="icon-close" type="button" aria-label="閉じる">×</button>
             </div>
-            <p class="range-lead">画像の日程と範囲を1カードずつにまとめています。範囲を変えても、他の範囲で蓄積した苦手データは残ります。</p>
+            <p class="range-lead">最初は端末の日付から次のテスト範囲を自動選択します。手動で変えても、他の範囲で蓄積した苦手データは残ります。</p>
             <div id="rangeGrid" class="range-grid"></div>
             <p class="range-note">※ 「全範囲」1,450語は10分では終わらないため、通常は第1〜9回のカードをおすすめします。</p>
             <div class="modal-actions">
+              <button id="rangeAuto" class="ghost-btn" type="button">今日の日付に合わせる</button>
               <button id="rangeClose" class="ghost-btn" type="button">閉じる</button>
             </div>
           </div>
@@ -264,6 +306,7 @@
     document.querySelector('#modeRangeStrip')?.addEventListener('click', openRangeLayer);
     document.querySelector('#rangeClose')?.addEventListener('click', closeRangeLayer);
     document.querySelector('#rangeCloseTop')?.addEventListener('click', closeRangeLayer);
+    document.querySelector('#rangeAuto')?.addEventListener('click', useAutomaticRange);
     document.querySelector('#rangeLayer')?.addEventListener('click', event => {
       if (event.target === event.currentTarget) closeRangeLayer();
     });
@@ -346,7 +389,7 @@
       '#selectedRangeMeta',
       custom
         ? `${senseList.length}語・この端末のみ`
-        : `Lesson ${range.lessonStart}–${range.lessonEnd} · ${range.wordCount.toLocaleString()}語 · ${estimatedMinutes(range.wordCount)}`
+        : `Lesson ${range.lessonStart}–${range.lessonEnd} · ${range.wordCount.toLocaleString()}語 · ${estimatedMinutes(range.wordCount)}${save.rangeSelectionMode === 'auto' ? ' · 日付から自動' : ''}`
     );
     setTextSafe(
       '#modeRangeName',
@@ -364,10 +407,11 @@
     }
   }
 
-  function selectRange(rangeId) {
+  function selectRange(rangeId, selectionMode = 'manual') {
     const next = data.ranges.find(range => range.id === rangeId);
     if (!next || !save) return;
     save.selectedRangeId = next.id;
+    save.rangeSelectionMode = selectionMode === 'auto' ? 'auto' : 'manual';
     save.activeWordSource = 'official';
     save.coverageQueue = [];
     save.coverageActiveSenseId = '';
@@ -377,7 +421,12 @@
     renderModeGrid();
     renderRangeList();
     closeRangeLayer();
-    showToast(`${next.label}（Lesson ${next.lessonStart}–${next.lessonEnd}）に切り替えました。`);
+    const prefix = save.rangeSelectionMode === 'auto' ? '今日の日付に合わせて' : '';
+    showToast(`${prefix}${next.label}（Lesson ${next.lessonStart}–${next.lessonEnd}）に切り替えました。`);
+  }
+
+  function useAutomaticRange() {
+    selectRange(defaultRange().id, 'auto');
   }
 
   function openRangeLayer() {
@@ -438,6 +487,7 @@
     dataVersion: data.version,
     buildEditorTSV,
     selectedRange: () => ({ ...selectedRange() }),
+    automaticRangeForDate: date => ({ ...automaticRangeForDate(date) }),
     wordsForSelectedRange: () => [...wordsForRange()],
     datasetSignature
   });
