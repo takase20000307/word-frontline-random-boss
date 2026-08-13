@@ -89,11 +89,16 @@
     const todayKey = localDateKey(date);
     const gap = differenceInDays(todayKey, state.lastQualifiedDate);
     if (state.lastQualifiedDate && (gap > 1 || gap < 0)) {
-      state.currentStreakDays = 0;
+      let changed = false;
+      if (state.currentStreakDays !== 0) {
+        state.currentStreakDays = 0;
+        changed = true;
+      }
       if (state.today.date !== todayKey) {
         state.today = { date: todayKey, attempts: 0, correct: 0 };
+        changed = true;
       }
-      return write(state);
+      return changed ? write(state) : state;
     }
     if (state.today.date !== todayKey) {
       state.today = { date: todayKey, attempts: 0, correct: 0 };
