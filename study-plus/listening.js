@@ -84,6 +84,11 @@
     let next = streakState;
     try { next ||= window.WordFrontlineStreak?.status?.(); } catch (error) { console.warn('Streak status unavailable:', error); }
     el.streakDays.textContent = String(next?.currentStreakDays || 0);
+    const tickets = Math.max(0, Number(next?.freezeTickets) || 0);
+    const ticketChip = document.getElementById('streakTickets');
+    const ticketCount = document.getElementById('streakTicketCount');
+    if (ticketCount) ticketCount.textContent = String(tickets);
+    ticketChip?.classList.toggle('hidden', tickets === 0);
   }
 
   function refreshEnglishVoices() {
