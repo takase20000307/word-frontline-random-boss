@@ -13,7 +13,7 @@
 'use strict';
 
 (() => {
-  const MOTIVATION_VERSION = '1.0.0';
+  const MOTIVATION_VERSION = '1.1.0';
   const STORAGE_KEY = 'wordFrontline:study-plus:motivation:v1';
   const streak = window.WordFrontlineStreak;
   const plus = window.WordFrontlinePlus;
@@ -54,9 +54,13 @@
   const XP = Object.freeze({
     correct: 10,
     weakBonus: 10,
-    incorrect: 2,
+    // Wrong answers earn nothing: otherwise tapping wrong fast in a rapid run
+    // earns XP (and rank-up crates) faster than studying.
+    incorrect: 0,
     bossPhase: 30,
-    weakBossHit: 10,
+    // A word missed earlier in the same run and answered correctly later
+    // (re-asks, weakness boss) pays little, so missing on purpose never pays.
+    freshReview: 3,
     newCard: 20,
     goldCard: 50,
     stageClear: 50,
@@ -93,11 +97,20 @@
   });
   const PITY_LIMIT = 14;
 
-  const DAILY = Object.freeze({ silverAttempts: 20, goldWeakDefeats: 5, goldFallbackAttempts: 50 });
+  // goldFallbackCorrect counts first-time correct answers (not re-asks of a
+  // word missed in the same run).
+  const DAILY = Object.freeze({ silverAttempts: 20, goldWeakDefeats: 5, goldFallbackCorrect: 50 });
   const MISSION_CLEAR_ACCURACY = 70;
   const MILESTONES = Object.freeze([25, 50, 75, 100]);
+  // Milestone crates need a real-sized list (the smallest test range is 42).
+  const MILESTONE_MIN_WORDS = 40;
+  const CUSTOM_KEYS_KEPT = 10;
+  const BATTLE_DAYS_KEPT = 21;
+  const BATTLES_PER_DAY_GROUP = 3;
   const GHOST_MIN_ATTEMPTS = 8;
   const GHOST_REWARDS_PER_DAY = 3;
+  const PAIR_FULL_ROUNDS = 10;
+  const RUN_CRATE_MIN_ACCURACY = 50;
   // Short runs (e.g. a weak-word run with only a few words) earn a share of
   // the full completion reward so they cannot be repeated for free crates.
   const FULL_RUN_ATTEMPTS = 20;
@@ -247,13 +260,19 @@
   /* Daily missions                                                      */
   /* ------------------------------------------------------------------ */
 
-  const isVerbSense = sense => /(^|[^助])動詞/.test(String(sense.pos || ''));
+  // Official data uses full names (他動詞／名詞); lists in the classic format
+  // use short tags (他・自, 名, 形, 副).
+  const posText = sense => String(sense.pos || '');
+  const isVerbSense = sense => /(^|[^助])動詞|(?:^|[・／/、,])(?:他|自|動)(?:$|[・／/、,])/.test(posText(sense));
+  const isNounSense = sense => /名詞|(?:^|[・／/、,])名(?:$|[・／/、,])/.test(posText(sense));
+  const isAdjAdvSense = sense => /形容詞|副詞|(?:^|[・／/、,])(?:形|副)(?:$|[・／/、,])/.test(posText(sense));
+  const hasPosInfo = sense => Boolean(posText(sense).trim()) && posText(sense).trim() !== '語';
   const MISSIONS = Object.freeze([
-    { id: 'verb', name: '動詞作戦', icon: '⚙️', rule: '動詞だけが出題される', filter: isVerbSense },
+    { id: 'verb', name: '動詞作戦', icon: '⚙️', rule: '動詞だけが出題される', filter: isVerbSense, needsPos: true },
     { id: 'blitz', name: '電撃戦', icon: '⚡', rule: '制限時間が約6割。素早く答えろ', time: .6, enemy: 1.25 },
-    { id: 'noun', name: '名詞作戦', icon: '🧱', rule: '名詞だけが出題される', filter: sense => /名詞/.test(String(sense.pos || '')) },
+    { id: 'noun', name: '名詞作戦', icon: '🧱', rule: '名詞だけが出題される', filter: isNounSense, needsPos: true },
     { id: 'listen', name: '聴音作戦', icon: '🎧', rule: '英単語が隠れる。音声だけで意味を当てろ', listen: true, time: 1.15 },
-    { id: 'adj', name: '形容詞・副詞作戦', icon: '🎨', rule: '形容詞・副詞だけが出題される', filter: sense => /形容詞|副詞/.test(String(sense.pos || '')) },
+    { id: 'adj', name: '形容詞・副詞作戦', icon: '🎨', rule: '形容詞・副詞だけが出題される', filter: isAdjAdvSense, needsPos: true },
     {
       id: 'sweep', name: '弱点掃討戦', icon: '🧹', rule: '苦手・覚えかけの単語だけが出題される',
       filter: sense => {
@@ -303,12 +322,13 @@
       sinceEpic: 0,
       inventory: {},
       equipped: { ...DEFAULT_EQUIPPED },
-      daily: { date: '', weakDefeats: 0, silver: false, gold: false, mission: false },
+      daily: { date: '', weakDefeats: 0, weakIds: [], solid: 0, silver: false, gold: false, mission: false },
       log: {},
       battles: [],
       ghost: { wins: 0, losses: 0, draws: 0 },
       milestones: {},
-      conquest: {}
+      conquest: {},
+      cardsBackfilled: false
     };
   }
 
@@ -355,9 +375,14 @@
       const item = ITEM_BY_ID.get(id);
       if (item && item.type === type && (item.starter || next.inventory[id])) next.equipped[type] = id;
     }
+    const weakIds = Array.isArray(raw.daily?.weakIds)
+      ? [...new Set(raw.daily.weakIds.filter(id => typeof id === 'string'))].slice(0, 500)
+      : [];
     next.daily = {
       date: isDate(raw.daily?.date) ? raw.daily.date : '',
-      weakDefeats: count(raw.daily?.weakDefeats),
+      weakIds,
+      weakDefeats: weakIds.length,
+      solid: count(raw.daily?.solid),
       silver: Boolean(raw.daily?.silver),
       gold: Boolean(raw.daily?.gold),
       mission: Boolean(raw.daily?.mission)
@@ -372,10 +397,11 @@
         };
       }
     }
+    const oldestBattle = shiftKey(todayKey(), -BATTLE_DAYS_KEPT);
     next.battles = Array.isArray(raw.battles)
       ? raw.battles
-        .filter(record => record && isDate(record.d) && count(record.a) > 0)
-        .slice(-60)
+        .filter(record => record && isDate(record.d) && count(record.a) > 0 && record.d >= oldestBattle)
+        .slice(-200)
         .map(record => ({
           d: record.d,
           t: count(record.t),
@@ -406,6 +432,7 @@
         }
       }
     }
+    next.cardsBackfilled = Boolean(raw.cardsBackfilled);
     return next;
   }
 
@@ -458,7 +485,7 @@
 
   function ensureDaily(key = todayKey()) {
     if (mstate.daily.date !== key) {
-      mstate.daily = { date: key, weakDefeats: 0, silver: false, gold: false, mission: false };
+      mstate.daily = { date: key, weakDefeats: 0, weakIds: [], solid: 0, silver: false, gold: false, mission: false };
     }
     return mstate.daily;
   }
@@ -472,7 +499,14 @@
   }
 
   function currentRangeKey() {
-    return isOfficialSource() ? currentRange()?.id || 'official' : 'custom';
+    if (isOfficialSource()) return currentRange()?.id || 'official';
+    // Each imported list gets its own key, so lists never share milestones.
+    return `custom:${hashText(activeSenses().map(sense => sense.senseId).sort().join('|'))}`;
+  }
+
+  function pruneCustomKeys(store) {
+    const keys = Object.keys(store).filter(key => key.startsWith('custom'));
+    for (const key of keys.slice(0, Math.max(0, keys.length - CUSTOM_KEYS_KEPT))) delete store[key];
   }
 
   function currentRangeLabel() {
@@ -570,8 +604,9 @@
     const stats = save?.progress?.[sense.senseId];
     if (!stats || stats.shownCount === 0) return 0;
     if (stats.lastWasIncorrect) return 1;
-    if (stats.masteryLevel >= 5) return 4;
-    if (stats.masteryLevel >= 3) return 3;
+    const streakNow = stats.currentCorrectStreak || 0;
+    if (stats.masteryLevel >= 5 && streakNow >= 5) return 4;
+    if (streakNow >= 3) return 3;
     return 2;
   }
 
@@ -585,10 +620,17 @@
 
   function snapshotConquest(summary = conquestSummary()) {
     const key = currentRangeKey();
-    const days = mstate.conquest[key] || (mstate.conquest[key] = {});
-    days[todayKey()] = summary.conquered;
+    if (!mstate.conquest[key]) {
+      mstate.conquest[key] = {};
+      pruneCustomKeys(mstate.conquest);
+    }
+    const days = mstate.conquest[key];
+    const today = todayKey();
+    if (days[today] === summary.conquered) return false;
+    days[today] = summary.conquered;
     const keys = Object.keys(days).sort();
     for (const old of keys.slice(0, Math.max(0, keys.length - 40))) delete days[old];
+    return true;
   }
 
   function conquestWeekDelta(summary = conquestSummary()) {
@@ -698,6 +740,7 @@
   }
 
   function nextMilestone(summary = cardSummary()) {
+    if (summary.total < MILESTONE_MIN_WORDS) return { ineligible: true };
     const reached = mstate.milestones[currentRangeKey()] || [];
     for (const pct of MILESTONES) {
       if (reached.includes(pct)) continue;
@@ -709,9 +752,13 @@
 
   function checkCardMilestones() {
     const summary = cardSummary();
-    if (summary.total < 4) return;
+    if (summary.total < MILESTONE_MIN_WORDS) return;
     const key = currentRangeKey();
-    const reached = mstate.milestones[key] || (mstate.milestones[key] = []);
+    if (!mstate.milestones[key]) {
+      mstate.milestones[key] = [];
+      pruneCustomKeys(mstate.milestones);
+    }
+    const reached = mstate.milestones[key];
     for (const pct of MILESTONES) {
       if (reached.includes(pct)) continue;
       if (summary.owned < Math.ceil(summary.total * pct / 100)) break;
@@ -827,18 +874,22 @@
   function dailyStatus() {
     const daily = ensureDaily();
     const today = streakToday();
-    const weakPool = activeSenses().filter(sense => save?.progress?.[sense.senseId]?.lastWasIncorrect).length;
+    // All of the student's words, not just the selected range, so switching
+    // ranges cannot change the rule.
+    const weakPool = Object.values(save?.progress || {}).filter(stats => stats?.lastWasIncorrect).length;
     const goldByWeak = daily.weakDefeats >= DAILY.goldWeakDefeats;
-    const goldByVolume = weakPool === 0 && today.attempts >= DAILY.goldFallbackAttempts;
+    const goldByVolume = weakPool === 0 && daily.solid >= DAILY.goldFallbackCorrect;
+    const fallbackRule = weakPool === 0 && !goldByWeak;
     return {
       attempts: today.attempts,
       weakDefeats: daily.weakDefeats,
       weakPool,
       bronze: today.attempts >= 1,
-      silver: today.attempts >= DAILY.silverAttempts,
-      gold: goldByWeak || goldByVolume,
+      silver: daily.silver || today.attempts >= DAILY.silverAttempts,
+      gold: daily.gold || goldByWeak || goldByVolume,
+      goldLabel: fallbackRule ? `金：${DAILY.goldFallbackCorrect}問に正解` : `金：苦手を${DAILY.goldWeakDefeats}語撃破`,
       goldRule: weakPool === 0 && !goldByWeak
-        ? `${DAILY.goldFallbackAttempts}問に回答（苦手が残っていない日）`
+        ? `${DAILY.goldFallbackCorrect}問に正解（${Math.min(daily.solid, DAILY.goldFallbackCorrect)}/${DAILY.goldFallbackCorrect}・苦手が残っていない日）`
         : `苦手を${DAILY.goldWeakDefeats}語撃破（${Math.min(daily.weakDefeats, DAILY.goldWeakDefeats)}/${DAILY.goldWeakDefeats}）`,
       mission: daily.mission
     };
@@ -863,6 +914,7 @@
   }
 
   function buildMissionPool(mission, full) {
+    if (mission.needsPos && !full.some(hasPosInfo)) return { pool: full, narrowed: false, fallback: true, reason: 'nopos' };
     let pool = null;
     if (mission.filter) pool = full.filter(mission.filter);
     if (mission.elite) {
@@ -871,9 +923,23 @@
     }
     if (!pool) return { pool: full, narrowed: false, fallback: false };
     const distinct = new Set(pool.map(sense => sense.english.toLowerCase())).size;
-    if (pool.length < MISSION_MIN_POOL || distinct < 6) return { pool: full, narrowed: false, fallback: true };
+    if (pool.length < MISSION_MIN_POOL || distinct < 6) return { pool: full, narrowed: false, fallback: true, reason: 'small' };
     return { pool, narrowed: true, fallback: false };
   }
+
+  // Whether today's rule can be applied on this device and word list. When it
+  // cannot, the stage runs with a substitute rule and pays a smaller crate.
+  function missionAvailability(mission = todayMission(), list = activeSenses()) {
+    const { fallback, reason } = buildMissionPool(mission, list);
+    if (mission.listen && !hasEnglishVoice()) return { degraded: true, reason: 'voice' };
+    return { degraded: Boolean(fallback), reason: fallback ? reason : '' };
+  }
+
+  const DEGRADED_TEXT = Object.freeze({
+    voice: '英語音声が使えないため、英単語を表示して出題します',
+    nopos: 'この単語リストには品詞の情報がないため、全単語で出題します',
+    small: '対象の単語が少ないため、全単語で出題します'
+  });
 
   function hasEnglishVoice() {
     try {
@@ -887,7 +953,7 @@
     restorePool();
     const mission = todayMission();
     const full = senseList;
-    const { pool, narrowed, fallback } = buildMissionPool(mission, full);
+    const { pool, narrowed, fallback, reason } = buildMissionPool(mission, full);
     const listen = Boolean(mission.listen && hasEnglishVoice());
     dailyPool = { full, mission, narrowed, fallback, listen };
     if (narrowed) senseList = pool;
@@ -895,8 +961,8 @@
     const app = document.querySelector('#app');
     app?.classList.toggle('mission-listen', listen);
     if (listen) app?.classList.add('audio-mode');
-    if (fallback) battlePing('対象の単語が少ないため、全単語で出題します', 'info');
-    if (mission.listen && !listen) battlePing('英語音声が使えないため、英単語を表示します', 'info');
+    if (fallback) battlePing(`${DEGRADED_TEXT[reason] || DEGRADED_TEXT.small}（報酬は強化補給箱）`, 'info');
+    if (mission.listen && !listen) battlePing(`${DEGRADED_TEXT.voice}（報酬は強化補給箱）`, 'info');
   }
 
   function restorePool() {
@@ -959,8 +1025,17 @@
   function startSession() {
     const family = sessionFamily();
     const rangeKey = currentRangeKey();
+    const now = Date.now();
+    const mission = save?.selectedMode === 'daily' && dailyPool
+      ? {
+        id: dailyPool.mission.id,
+        date: todayKey(),
+        degraded: Boolean(dailyPool.fallback || (dailyPool.mission.listen && !dailyPool.listen))
+      }
+      : null;
     session = {
-      id: Date.now(),
+      id: now,
+      startedAt: now,
       mode: save?.selectedMode || 'normal',
       family,
       rangeKey,
@@ -979,6 +1054,11 @@
       dailyTiers: [],
       conquestStart: conquestSummary(activeSenses()).conquered,
       ghost: family === 'pair' ? null : pickGhost(mstate.battles, todayKey(), family, rangeKey),
+      mission,
+      solidCorrect: 0,
+      reviewAttempts: 0,
+      weakBossWords: new Set(),
+      stageFinished: false,
       finalized: false
     };
     lastSummary = null;
@@ -988,7 +1068,9 @@
 
   function onAnswer(sense, correct, reaction, before) {
     if (!sense) return;
-    if (!session || session.finalized) startSession();
+    // A run started outside startStage (e.g. 苦手を一斉学習 from the weak list)
+    // must never extend the interrupted stage's session.
+    if (!session || session.finalized || session.family !== sessionFamily()) startSession();
     const key = todayKey();
     ensureDaily(key);
     const log = dayLog(key);
@@ -997,17 +1079,31 @@
     log.a++;
     log.r += Math.round(Math.max(0, Number(reaction) || 0));
 
+    // Missed earlier in this same session: not a "weak word defeated".
+    const freshMiss = Number(before.lastIncorrectAt || 0) >= session.startedAt;
+    const weakBeforeSession = before.wasWeak && !freshMiss;
+    const wordKey = String(sense.english || '').toLowerCase();
+    if (freshMiss) session.reviewAttempts++;
+
     if (correct) {
       session.correct++;
       log.c++;
-      let gained = XP.correct;
-      if (before.wasWeak) {
+      if (!freshMiss) {
+        session.solidCorrect++;
+        mstate.daily.solid++;
+      }
+      let gained = freshMiss ? XP.freshReview : XP.correct;
+      if (weakBeforeSession) {
         gained += XP.weakBonus;
         session.weakDefeats++;
-        mstate.daily.weakDefeats++;
-        log.w++;
+        const daily = mstate.daily;
+        if (!daily.weakIds.includes(wordKey)) {
+          daily.weakIds.push(wordKey);
+          daily.weakDefeats = daily.weakIds.length;
+          log.w++;
+        }
         rollDrop('weak', DROP.weakDefeat, 'boosted');
-      } else {
+      } else if (!freshMiss) {
         rollDrop('drop', DROP.correct, 'base');
       }
       if (before.isBoss) {
@@ -1016,25 +1112,30 @@
         session.bossDefeats++;
         log.b++;
         log.bw = [...log.bw.filter(word => word !== sense.english), sense.english].slice(-12);
-        captureCard(sense, { boss: true });
+        if (freshMiss) {
+          if (mstate.cards[sense.senseId]) mstate.cards[sense.senseId].b += 1;
+        } else {
+          captureCard(sense, { boss: true });
+        }
         rollDrop('boss', DROP.bossPhase, 'base');
-      } else if (before.isWeakBoss) {
-        gained += XP.weakBossHit;
+      } else if (before.isWeakBoss && !session.weakBossWords.has(sense.senseId)) {
+        session.weakBossWords.add(sense.senseId);
         session.bossDefeats++;
         log.b++;
         log.bw = [...log.bw.filter(word => word !== sense.english), sense.english].slice(-12);
-        captureCard(sense, { boss: true });
+        if (mstate.cards[sense.senseId]) mstate.cards[sense.senseId].b += 1;
       }
       addXp(gained, 'answer');
     } else {
-      addXp(XP.incorrect, 'answer');
+      if (!before.timedOut) addXp(XP.incorrect, 'answer');
       if (session.family === 'rapid' && session.mode === 'coverage' && !before.isWeakBoss) session.firstPassMistakes++;
     }
 
     const after = save.progress[sense.senseId];
     if (after) {
-      if (after.masteryLevel >= 5) captureCard(sense, { tier: 2 });
-      else if (after.masteryLevel >= 3) captureCard(sense, { tier: 1 });
+      const level = conquestLevel(sense);
+      if (level === 4) captureCard(sense, { tier: 2 });
+      else if (level === 3) captureCard(sense, { tier: 1 });
     }
     checkDailyRewards();
     persist();
@@ -1042,62 +1143,92 @@
     renderHudRank();
   }
 
+  // Ends the session without completion rewards (answers already earned XP).
+  function discardSession() {
+    if (session) session.finalized = true;
+    lastSummary = null;
+    return null;
+  }
+
   function finalizeSession() {
-    if (!session || session.finalized || session.attempts === 0) return lastSummary;
-    session.finalized = true;
-    const gameOver = gameStateIs('GAME_OVER');
+    if (!session || session.finalized) return lastSummary;
+    if (session.attempts === 0) return discardSession();
+    const gameOver = session.gameOver || gameStateIs('GAME_OVER');
     const family = session.family;
     const accuracyPct = Math.round(session.correct / session.attempts * 100);
     const averageMs = session.reaction / session.attempts;
     const events = [];
     let completion = 'stage';
 
+    // Only pay completion rewards for a run that really ended here.
+    const finishedRapid = update?.finishedRapidMode?.() || '';
+    if (family === 'stage' && !gameOver && !session.stageFinished) return discardSession();
+    if (family === 'rapid' && !gameOver && !finishedRapid) return discardSession();
+    session.finalized = true;
+    // Guaranteed crates need a real-sized list, so a self-made list of a few
+    // easy words cannot be used to collect them. XP is unchanged.
+    const fullList = activeSenses().length >= MILESTONE_MIN_WORDS;
+    if (!fullList && family !== 'pair' && !gameOver) {
+      events.push(`補給箱の確定報酬は${MILESTONE_MIN_WORDS}語以上のリストが対象です`);
+    }
+
     if (family === 'pair') {
       completion = 'pair';
-      addXp(XP.pairMatch, 'pair');
-      const rank = update?.pairSelfRank?.() || 0;
-      if (rank === 1) grantCrate('pair', 'base', { quiet: true });
-      else rollDrop('pair', DROP.pairLoss, 'base');
+      const outcome = update?.pairOutcome?.() || { rank: update?.pairSelfRank?.() || 0, topTie: false, completed: false };
+      const share = Math.min(1, session.attempts / PAIR_FULL_ROUNDS);
+      addXp(XP.pairMatch * share, 'pair');
+      if (outcome.completed && share >= 1) {
+        if (outcome.rank === 1 && !outcome.topTie && session.correct > 0) grantCrate('pair', 'base', { quiet: true });
+        else rollDrop('pair', DROP.pairLoss, 'base');
+      }
     } else if (gameOver) {
       completion = 'gameover';
       addXp(XP.gameOver, 'gameover');
     } else if (family === 'rapid') {
-      const finished = update?.finishedRapidMode?.() || session.mode;
-      completion = finished === 'coverage' ? 'coverage' : 'weakrun';
-      const share = Math.min(1, session.attempts / FULL_RUN_ATTEMPTS);
+      completion = finishedRapid === 'coverage' ? 'coverage' : 'weakrun';
+      // Scaled by first-time correct answers, so wrong answers, timeouts or
+      // re-answering words missed on purpose cannot farm it.
+      const share = Math.min(1, session.solidCorrect / FULL_RUN_ATTEMPTS);
+      const firstTryAccuracy = Math.round(session.solidCorrect / Math.max(1, session.attempts - session.reviewAttempts) * 100);
       addXp(XP.runClear * share, 'run');
-      if (share >= 1) grantCrate('run', 'base', { quiet: true });
-      else rollDrop('run', share * .5, 'base');
-      if (finished === 'coverage' && session.firstPassMistakes === 0 && share >= 1) {
+      if (fullList && share >= 1 && firstTryAccuracy >= RUN_CRATE_MIN_ACCURACY) grantCrate('run', 'base', { quiet: true });
+      else if (fullList) rollDrop('run', share * .5, 'base');
+      const finished = finishedRapid;
+      if (fullList && finished === 'coverage' && session.firstPassMistakes === 0 && share >= 1) {
         grantCrate('perfect', 'boosted', { quiet: true });
         events.push('ノーミス完走ボーナス：強化補給箱');
       }
     } else {
       addXp(XP.stageClear, 'stage');
-      if (session.bossHits.size >= 3) {
+      if (fullList && session.bossHits.size >= 3) {
         grantCrate('sweep', 'boosted', { quiet: true });
         events.push('ボス3体を完全撃破：強化補給箱');
-      } else {
+      } else if (fullList) {
         rollDrop('stage', DROP.stageNoSweep, 'base');
       }
     }
 
     let missionCleared = false;
-    if (session.mode === 'daily' && completion === 'stage') {
+    if (session.mode === 'daily' && session.mission && completion === 'stage') {
       const daily = ensureDaily();
-      if (accuracyPct >= MISSION_CLEAR_ACCURACY && !daily.mission) {
+      const mission = MISSIONS.find(item => item.id === session.mission.id) || todayMission();
+      if (session.mission.date !== todayKey()) {
+        events.push('日付が変わったため、この作戦は報酬の対象外です（新しい日の作戦に挑戦しよう）');
+      } else if (accuracyPct >= MISSION_CLEAR_ACCURACY && !daily.mission) {
         daily.mission = true;
         missionCleared = true;
         addXp(XP.mission, 'mission');
-        grantCrate('mission', 'premium', { quiet: true });
-        const mission = todayMission();
+        const degraded = session.mission.degraded;
+        if (fullList) grantCrate('mission', degraded ? 'boosted' : 'premium', { quiet: true });
         celebrations.push({
           type: 'mission',
           icon: mission.icon,
-          title: '作戦成功！',
+          title: degraded ? '作戦成功（代替ルール）' : '作戦成功！',
           heading: `本日の作戦「${mission.name}」`,
-          body: `正答率${accuracyPct}%でクリアしました。明日は別の作戦が届きます。`,
-          reward: `特別補給箱 +1・${XP.mission}戦功`
+          body: degraded
+            ? `正答率${accuracyPct}%でクリア。この端末では作戦のルールをそのまま使えなかったため、報酬は強化補給箱です。`
+            : `正答率${accuracyPct}%でクリアしました。明日は別の作戦が届きます。`,
+          reward: fullList ? `${degraded ? '強化補給箱' : '特別補給箱'} +1・${XP.mission}戦功` : `${XP.mission}戦功`
         });
       } else if (accuracyPct < MISSION_CLEAR_ACCURACY && !daily.mission) {
         events.push(`作戦クリアには正答率${MISSION_CLEAR_ACCURACY}%以上が必要です（今回${accuracyPct}%）`);
@@ -1127,8 +1258,13 @@
     }
 
     if (family !== 'pair' && session.attempts >= GHOST_MIN_ATTEMPTS) {
+      const today = todayKey();
+      // Keep a few records per day and kind, by date, so a ghost from about a
+      // week ago survives even on days with many stages.
+      const sameGroup = mstate.battles.filter(record => record.d === today && record.f === family && record.rid === session.rangeKey);
+      if (sameGroup.length >= BATTLES_PER_DAY_GROUP) mstate.battles.splice(mstate.battles.indexOf(sameGroup[0]), 1);
       mstate.battles.push({
-        d: todayKey(),
+        d: today,
         t: Date.now(),
         m: session.mode,
         f: family,
@@ -1137,7 +1273,8 @@
         c: session.correct,
         r: Math.round(averageMs)
       });
-      if (mstate.battles.length > 60) mstate.battles.splice(0, mstate.battles.length - 60);
+      const oldest = shiftKey(today, -BATTLE_DAYS_KEPT);
+      mstate.battles = mstate.battles.filter(record => record.d >= oldest).slice(-200);
     }
 
     checkDailyRewards();
@@ -1235,6 +1372,7 @@
     const g = canvas.getContext('2d');
     const font = (weight, size) => `${weight} ${size}px "Noto Sans JP","Hiragino Sans","Yu Gothic UI",Meiryo,system-ui,sans-serif`;
     const box = (x, y, w, h, r, fill, stroke) => {
+      r = Math.max(0, Math.min(r, w / 2, h / 2));
       g.beginPath();
       g.moveTo(x + r, y);
       g.arcTo(x + w, y, x + w, y + h, r);
@@ -1298,7 +1436,7 @@
     const maxAttempts = Math.max(20, ...stats.days.map(day => day.attempts));
     stats.days.forEach((day, index) => {
       const cx = 140 + index * 133;
-      const barHeight = Math.round(58 * Math.min(1, day.attempts / maxAttempts));
+      const barHeight = Math.max(day.attempts ? 6 : 0, Math.round(58 * Math.min(1, day.attempts / maxAttempts)));
       box(cx - 34, 610 - 58, 68, 58, 12, 'rgba(255,255,255,.05)');
       if (barHeight) box(cx - 34, 610 - barHeight, 68, barHeight, 12, day.studied ? '#43d9ff' : '#3a4b5a');
       if (day.studied || day.frozen) {
@@ -1607,6 +1745,8 @@
       const stats = sense ? save.progress[sense.senseId] : null;
       const before = {
         wasWeak: Boolean(stats && (stats.lastWasIncorrect || (stats.incorrectCount > 0 && stats.incorrectCount > stats.correctCount))),
+        lastIncorrectAt: stats?.lastIncorrectAt || 0,
+        timedOut: !correct && Number(reaction) >= questionTimeLimit * 1000 - 1,
         isBoss: Boolean(bossPhase > 0 && bossSense && sense && bossSense.senseId === sense.senseId),
         bossPhase,
         isWeakBoss: Boolean(update?.isWeakBossPhase?.())
@@ -1646,11 +1786,13 @@
     };
 
     finishStage = function finishStageMotivation() {
+      if (session && !session.finalized) session.stageFinished = true;
       restorePool();
       return previous.finishStage();
     };
 
     gameOver = function gameOverMotivation() {
+      if (session && !session.finalized) session.gameOver = true;
       restorePool();
       return previous.gameOver();
     };
@@ -1658,6 +1800,7 @@
     showScreen = function showScreenMotivation(which) {
       restorePool();
       if (session && !session.finalized) session = null;
+      lastSummary = null;
       const result = previous.showScreen(which);
       renderGhostChip();
       if (which === 'start' && ready) {
@@ -1704,7 +1847,8 @@
       dashboard.classList.add('mtv-dashboard');
       dashboard.insertAdjacentHTML('afterbegin', `
         <div id="mtvRankStrip" class="mtv-rank-strip">
-          <button id="mtvRankButton" class="mtv-rank-main" type="button" aria-label="司令部を開く（階級と装備）">
+          <button id="mtvRankButton" class="mtv-rank-main" type="button">
+            <span class="sr-only">司令部を開く：</span>
             <span id="mtvEmblem" class="mtv-emblem" aria-hidden="true">⭐</span>
             <span class="mtv-rank-text">
               <span class="plus-kicker">階級</span>
@@ -1912,7 +2056,7 @@
     renderCrateBadges();
 
     const summary = conquestSummary(activeSenses());
-    snapshotConquest(summary);
+    const snapshotChanged = snapshotConquest(summary);
     const countdown = testCountdown();
     setText('mtvCountdown', countdown.short || countdown.label);
     $id('mtvCountdown')?.classList.toggle('urgent', countdown.phase === 'before' && countdown.days <= 7 || countdown.phase === 'during');
@@ -1941,7 +2085,9 @@
     setText('mtvMissionName', `作戦：${mission.name}`);
     $id('mtvMissionDone')?.classList.toggle('hidden', !daily.mission);
     renderHudRank();
-    persist();
+    // Rendering never overwrites newer data from another tab; it only saves
+    // the conquest snapshot when that actually changed.
+    if (snapshotChanged) persist();
   }
 
   function renderCrateBadges() {
@@ -2118,8 +2264,43 @@
 
   /* Layers ------------------------------------------------------------ */
 
+  const layerOpeners = new Map();
+
+  function firstUsableButton(root) {
+    return [...(root?.querySelectorAll('button') || [])].find(button => !button.disabled && button.offsetParent !== null) || null;
+  }
+
   function openLayer(id) {
+    const opener = document.activeElement;
     openModal(`#${id}`);
+    layerOpeners.set(id, opener);
+    // The engine focuses the first button, which can be a hidden one.
+    setTimeout(() => {
+      const layer = $id(id);
+      if (!layer || layer.classList.contains('hidden') || layer.contains(document.activeElement)) return;
+      const preferred = id === 'mtvCrateLayer' ? $id('mtvCrateOpen') : null;
+      (preferred && !preferred.disabled ? preferred : firstUsableButton(layer.querySelector('.modal-actions')) || firstUsableButton(layer))?.focus();
+    }, 30);
+  }
+
+  function restoreFocusAfter(id) {
+    const opener = layerOpeners.get(id);
+    layerOpeners.delete(id);
+    setTimeout(() => {
+      if (opener?.isConnected && opener.offsetParent !== null && !opener.disabled) {
+        opener.focus();
+        return;
+      }
+      const top = topMtvLayer();
+      if (top) {
+        firstUsableButton(top)?.focus();
+        return;
+      }
+      const result = $id('resultLayer');
+      if (result && !result.classList.contains('hidden')) {
+        (result.querySelector('[data-mtv-open-crate]') || $id('nextStage'))?.focus();
+      }
+    }, 0);
   }
 
   function closeMtvLayer(id) {
@@ -2131,6 +2312,7 @@
       refreshResultPanel();
       if (!$id('mtvHqLayer')?.classList.contains('hidden')) renderHq();
     }
+    restoreFocusAfter(id);
     setTimeout(showNextCelebration, 150);
   }
 
@@ -2219,7 +2401,7 @@
           <div><span>獲得</span><strong>${summary.owned}<small> / ${summary.total}</small></strong></div>
           <div><span>金カード</span><strong class="gold">${summary.gold}</strong></div>
           <div><span>BOSS撃破</span><strong class="boss">${summary.boss}</strong></div>
-          <div class="wide"><span>次の達成報酬</span><strong class="small">${milestone ? (milestone.remaining ? `あと${milestone.remaining}枚で${milestone.pct}% → ${milestone.pct === 100 ? '特別' : '強化'}補給箱` : `${milestone.pct}% 達成！`) : 'コンプリート済み 🏆'}</strong></div>
+          <div class="wide"><span>次の達成報酬</span><strong class="small">${milestone?.ineligible ? `達成報酬は${MILESTONE_MIN_WORDS}語以上のリストが対象です` : milestone ? (milestone.remaining ? `あと${milestone.remaining}枚で${milestone.pct}% → ${milestone.pct === 100 ? '特別' : '強化'}補給箱` : `${milestone.pct}% 達成！`) : 'コンプリート済み 🏆'}</strong></div>
         </div>
         <p class="mtv-note">ボス戦で倒すか、3回連続正解でカード獲得。5回連続正解で金カードに進化します。</p>
       `;
@@ -2299,14 +2481,14 @@
     } else if (hqTab === 'guide') {
       body.innerHTML = `
         <ul class="mtv-guide">
-          <li><b>正解</b> +${XP.correct}（苦手だった単語なら +${XP.correct + XP.weakBonus}）</li>
-          <li><b>不正解</b> +${XP.incorrect}（挑戦したことも戦功です）</li>
-          <li><b>ボス撃破</b> +${XP.bossPhase} ／ <b>ステージクリア</b> +${XP.stageClear} ／ <b>一斉学習の完走</b> +${XP.runClear}</li>
+          <li><b>正解</b> +${XP.correct}（前から苦手だった単語なら +${XP.correct + XP.weakBonus}。同じ回で間違えた単語を後で正解したときは +${XP.freshReview}）</li>
+          <li><b>不正解・時間切れ</b> 0（わざと間違えても戦功は増えません）</li>
+          <li><b>ボス撃破</b> +${XP.bossPhase} ／ <b>ステージクリア</b> +${XP.stageClear} ／ <b>一斉学習の完走</b> 最大 +${XP.runClear}（正解${FULL_RUN_ATTEMPTS}問で満額）</li>
           <li><b>新しいカード</b> +${XP.newCard} ／ <b>金カード</b> +${XP.goldCard}</li>
           <li><b>今日の目標</b> 銀 +${XP.silver} ・ 金 +${XP.gold} ／ <b>本日の作戦</b> +${XP.mission}</li>
           <li><b>ゴースト戦の勝利</b> +${XP.ghostWin}（1日${GHOST_REWARDS_PER_DAY}回まで）</li>
         </ul>
-        <p class="mtv-note">補給箱は、苦手単語を倒したとき・ボスを倒したときに出やすくなります。昇進や図鑑の達成でも必ずもらえます。同じアイテムが出たら戦功に変わります。</p>
+        <p class="mtv-note">補給箱は、前から苦手だった単語を倒したとき・ボスを倒したときに出やすくなります。昇進や図鑑の達成（${MILESTONE_MIN_WORDS}語以上のリスト）でも必ずもらえます。同じアイテムが出たら戦功に変わります。わざと間違えても得はしません。</p>
       `;
     } else {
       body.innerHTML = Object.entries(ITEM_TYPES).map(([type, meta]) => {
@@ -2369,6 +2551,7 @@
     if (!body) return;
     const daily = dailyStatus();
     const mission = todayMission();
+    const availability = missionAvailability(mission);
     const tomorrow = todayMission(shiftKey(todayKey(), 1));
     const row = (earned, medal, label, detail, reward) => `
       <li class="${earned ? 'earned' : ''}">
@@ -2380,13 +2563,14 @@
       <ul class="mtv-daily-list">
         ${row(daily.bronze, '🥉', '銅：1問に答える', `今日 ${daily.attempts}問 · 継続日数が1日伸びます`, '継続+1日')}
         ${row(daily.silver, '🥈', `銀：${DAILY.silverAttempts}問に答える`, `${Math.min(daily.attempts, DAILY.silverAttempts)} / ${DAILY.silverAttempts}問（リスニングも含む）`, `+${XP.silver}戦功`)}
-        ${row(daily.gold, '🥇', '金：苦手を撃破する', esc(daily.goldRule), `+${XP.gold}・強化補給箱`)}
+        ${row(daily.gold, '🥇', esc(daily.goldLabel), esc(daily.goldRule), `+${XP.gold}・強化補給箱`)}
       </ul>
       <section class="mtv-mission-box ${daily.mission ? 'done' : ''}">
         <p class="plus-kicker">本日の作戦</p>
         <h3><span>${mission.icon}</span> ${esc(mission.name)} ${daily.mission ? '<b>クリア済み ✓</b>' : ''}</h3>
         <p>${esc(mission.rule)}。1ステージを正答率${MISSION_CLEAR_ACCURACY}%以上でクリアすると作戦成功。</p>
-        <p class="mtv-reward-line">報酬：特別補給箱 + ${XP.mission}戦功（1日1回）</p>
+        ${availability.degraded ? `<p class="mtv-note small">※ ${esc(DEGRADED_TEXT[availability.reason])}。</p>` : ''}
+        <p class="mtv-reward-line">報酬：${availability.degraded ? '強化補給箱' : '特別補給箱'} + ${XP.mission}戦功（1日1回）</p>
         <p class="mtv-note small">明日の作戦：${tomorrow.icon} ${esc(tomorrow.name)}</p>
       </section>
     `;
@@ -2414,7 +2598,10 @@
     const small = card.querySelector('small');
     if (strong) strong.textContent = `${mission.icon} 本日の作戦：${mission.name}`;
     if (small) {
-      small.textContent = `${mission.rule}。正答率${MISSION_CLEAR_ACCURACY}%以上で1ステージクリアすると作戦成功。${done ? '本日クリア済み ✓' : `報酬：特別補給箱＋${XP.mission}戦功`}`;
+      const availability = missionAvailability(mission);
+      const note = availability.degraded ? `（${DEGRADED_TEXT[availability.reason]}）` : '';
+      const reward = availability.degraded ? '強化補給箱' : '特別補給箱';
+      small.textContent = `${mission.rule}${note}。正答率${MISSION_CLEAR_ACCURACY}%以上で1ステージクリアすると作戦成功。${done ? '本日クリア済み ✓' : `報酬：${reward}＋${XP.mission}戦功`}`;
     }
     grid.prepend(card);
   }
@@ -2645,6 +2832,16 @@
       if (equipItem(button.dataset.itemId)) renderHq();
     });
 
+    // 苦手を一斉学習 from the weak list (also used by the conquest map) starts a
+    // rapid run without startStage. Close the interrupted stage first, before
+    // v2 builds the weak deck from senseList.
+    document.addEventListener('click', event => {
+      if (!event.target?.closest?.('#startWeakRun')) return;
+      restorePool();
+      if (session && !session.finalized) session = null;
+      lastSummary = null;
+    }, true);
+
     // Our dialogs sit above the game: keep Enter / number keys from reaching
     // the game while one is open, and let Escape close the top one.
     document.addEventListener('keydown', event => {
@@ -2711,7 +2908,7 @@
     test('制覇判定', () => {
       const old = save.progress.__mtv_probe__;
       try {
-        save.progress.__mtv_probe__ = { ...defaultStats(), shownCount: 4, masteryLevel: 3 };
+        save.progress.__mtv_probe__ = { ...defaultStats(), shownCount: 4, masteryLevel: 3, currentCorrectStreak: 3 };
         const conquered = conquestLevel({ senseId: '__mtv_probe__' }) === 3;
         save.progress.__mtv_probe__.lastWasIncorrect = true;
         const weak = conquestLevel({ senseId: '__mtv_probe__' }) === 1;
@@ -2745,8 +2942,34 @@
   installCosmetics();
   injectInterface();
 
+  // Another tab saved newer data: adopt it before this tab can save over it.
+  window.addEventListener('storage', event => {
+    if (event.key !== null && event.key !== STORAGE_KEY) return;
+    loadState();
+    if (ready) {
+      renderDashboard();
+      renderHudRank();
+    }
+  });
+
+  // Players who studied before this update get the cards they already earned,
+  // quietly (no XP, crates or celebrations; dated by when they last saw it).
+  function backfillCards() {
+    if (mstate.cardsBackfilled || !save?.progress) return;
+    for (const [senseId, stats] of Object.entries(save.progress)) {
+      if (!stats || mstate.cards[senseId]) continue;
+      const level = conquestLevel({ senseId });
+      if (level < 3) continue;
+      const at = Math.max(0, Number(stats.lastShownAt) || 0);
+      mstate.cards[senseId] = { t: level === 4 ? 2 : 1, b: 0, at, g: level === 4 ? at : 0 };
+    }
+    mstate.cardsBackfilled = true;
+    persist();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     ensureDaily();
+    backfillCards();
     mstate.rankSeen = Math.max(mstate.rankSeen, rankIndexForXp(mstate.xp));
     wireEvents();
     watchResults();

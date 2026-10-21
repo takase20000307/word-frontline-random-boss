@@ -3,6 +3,8 @@
 /* ---------- Start screen ---------- */
 
 #startScreen .logo { font-size: clamp(34px, 6.4vw, 66px); }
+/* The start card scrolls on short screens; keep the main button in view. */
+#startScreen #toModesButton { position: sticky; bottom: 10px; z-index: 3; }
 #startScreen .tagline { margin: 8px auto 4px; font-size: clamp(13px, 1.6vw, 16px); }
 @media (max-height: 860px) { #startScreen .tagline { display: none; } }
 
@@ -321,6 +323,10 @@
 .mtv-ping.daily { border-color: #50eea8; color: #d2ffeb; background: #0b2a21ee; }
 .mtv-ping.card { border-color: #c77dff; color: #f1dcff; background: #22113aee; }
 
+/* The engine shortens every animation to ~0s under reduced motion, which
+   would jump the ping to its invisible end frame. */
+.reduced-motion .mtv-ping { animation: none; }
+
 @keyframes mtvPing {
   0% { opacity: 0; transform: translateY(8px) scale(.92); }
   12%, 80% { opacity: 1; transform: translateY(0) scale(1); }
@@ -329,6 +335,7 @@
 
 /* Listen-only mission: hide the English until the answer is resolved. */
 #app.mission-listen .question-word,
+#app.mission-listen .question-cue,
 #app.mission-listen #sideWord { visibility: hidden; }
 #app.mission-listen .question-card::after {
   content: "🎧 音声を聞いて答えよう";
@@ -340,6 +347,8 @@
 }
 body[data-game-state="RESOLVING"] #app.mission-listen .question-word,
 body[data-game-state="REWARD"] #app.mission-listen .question-word,
+body[data-game-state="RESOLVING"] #app.mission-listen .question-cue,
+body[data-game-state="REWARD"] #app.mission-listen .question-cue,
 body[data-game-state="RESOLVING"] #app.mission-listen #sideWord,
 body[data-game-state="REWARD"] #app.mission-listen #sideWord { visibility: visible; }
 body[data-game-state="RESOLVING"] #app.mission-listen .question-card::after,
@@ -567,10 +576,8 @@ body[data-game-state="REWARD"] #app.mission-listen .question-card::after { conte
   gap: 4px;
   min-height: 98px;
   border: 1px solid var(--rarity);
-  border: 1px solid color-mix(in srgb, var(--rarity) 55%, #1d3345);
   border-radius: 12px;
-  background: #0c1a27;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 14%, #0c1a27), #0a1520);
+  background: linear-gradient(180deg, #11263a, #0a1520);
   color: #fff;
   padding: 9px 6px 7px;
   cursor: pointer;
@@ -766,10 +773,8 @@ body[data-game-state="REWARD"] #app.mission-listen .question-card::after { conte
   gap: 6px;
   border: 2px solid var(--rarity);
   border-radius: 18px;
-  background: #0f2133;
-  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--rarity) 32%, transparent), #0a1520 70%);
+  background: radial-gradient(circle at 50% 30%, #1d3a55, #0a1520 70%);
   box-shadow: 0 0 40px rgba(255, 255, 255, .12);
-  box-shadow: 0 0 40px color-mix(in srgb, var(--rarity) 45%, transparent);
   padding: 16px 14px 14px;
   animation: mtvReveal .55s cubic-bezier(.2, 1.4, .4, 1) both;
 }
@@ -795,7 +800,21 @@ body[data-game-state="REWARD"] #app.mission-listen .question-card::after { conte
 .mtv-reveal.r-legend { animation: mtvReveal .55s cubic-bezier(.2, 1.4, .4, 1) both, mtvLegendGlow 1.4s ease-in-out .55s infinite; }
 
 @keyframes mtvReveal { from { opacity: 0; transform: scale(.4) rotate(-6deg); } }
-@keyframes mtvLegendGlow { 50% { box-shadow: 0 0 70px color-mix(in srgb, var(--rarity) 70%, transparent); } }
+@keyframes mtvLegendGlow { 50% { box-shadow: 0 0 70px rgba(255, 209, 102, .65); } }
+
+/* Rarity tints need color-mix (Safari 16.2+). A var() inside color-mix cannot
+   fall back by declaration order, so it is gated here instead. */
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .mtv-item {
+    border-color: color-mix(in srgb, var(--rarity) 55%, #1d3345);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 14%, #0c1a27), #0a1520);
+  }
+  .mtv-item.equipped { border-color: #50eea8; }
+  .mtv-reveal {
+    background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--rarity) 32%, transparent), #0a1520 70%);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--rarity) 45%, transparent);
+  }
+}
 
 /* Celebration */
 
@@ -914,13 +933,25 @@ body[data-game-state="REWARD"] #app.mission-listen .question-card::after { conte
   .mtv-rank-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-height: 740px) and (min-width: 700px) {
-  #startScreen .logo { font-size: clamp(30px, 5vw, 52px); }
+@media (max-height: 760px) and (min-width: 700px) {
+  #startScreen .logo { font-size: clamp(28px, 4.4vw, 46px); }
   .plus-dashboard.mtv-dashboard { margin: 8px auto 10px; gap: 8px; }
-  .mtv-emblem { width: 44px; height: 44px; font-size: 22px; }
+  .mtv-emblem { width: 42px; height: 42px; font-size: 21px; }
+  .mtv-rank-strip { padding: 6px 8px; }
+  .mtv-chip-btn { min-height: 32px; padding: 4px 9px; }
+  .mtv-dashboard .plus-panel { padding: 9px 12px; }
+  .mtv-dashboard .range-summary em,
+  .mtv-dashboard .mtv-pace,
+  .mtv-dashboard .mtv-conquest-card .mtv-link,
+  .mtv-dashboard .streak-card > small { display: none; }
+  .mtv-dashboard .streak-card strong b { font-size: 30px; }
+  .mtv-dashboard .streak-tickets { margin-top: 4px; }
+  .mtv-conquest-line strong { font-size: 26px; }
+  .mtv-medal { width: 32px; height: 32px; font-size: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .mtv-ping,
   .mtv-chip-btn.has-crates,
   .mtv-res-crate,
   .mtv-crate:not(.opening),
