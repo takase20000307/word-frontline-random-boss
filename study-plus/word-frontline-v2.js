@@ -15,7 +15,7 @@
 'use strict';
 
 (() => {
-  const UPDATE_VERSION = '3.2.0';
+  const UPDATE_VERSION = '3.2.1';
   const RAPID_TARGET_MS = 10 * 60 * 1000;
   const RAPID_MEMORY_MS = 60 * 1000;
   const WEAK_BOSS_PASSES = 2;
@@ -131,6 +131,24 @@
 
   injectUpdateInterface();
   installOverrides();
+
+  // Read-only status for later layers (Study Plus motivation features).
+  window.WordFrontlineUpdate = Object.freeze({
+    version: UPDATE_VERSION,
+    isRapidActive: () => rapid.active,
+    rapidMode: () => (rapid.active ? rapid.mode : ''),
+    isWeakBossPhase: () => isWeakBossPhase(),
+    isPairActive: () => pair.active,
+    finishedRapidMode: () => rapid.finishedMode,
+    pairSelfRank: () => {
+      if (!pair.finished) return 0;
+      const ranking = serializePairPlayers().sort(
+        (a, b) => b.score - a.score || b.correct - a.correct || a.seat - b.seat
+      );
+      return ranking.findIndex(player => player.id === pair.selfPlayerId) + 1;
+    },
+    weakBossPasses: WEAK_BOSS_PASSES
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
     initializeUpdate();
