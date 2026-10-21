@@ -11,6 +11,9 @@
   const HISTORY_DAYS = 60;
   const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
   let memoryValue = '';
+  // When a write fails (e.g. storage full) the in-memory copy is newer than
+  // what getItem returns, so read() must keep using it.
+  let writeFailed = false;
   const listeners = new Set();
 
   function localDateKey(date = new Date()) {
@@ -78,6 +81,12 @@
           c: nonNegative(raw.history[key]?.c)
         };
       }
+    } else if (DATE_PATTERN.test(raw.today?.date || '') && nonNegative(raw.today?.attempts) > 0) {
+      // Data saved before daily history existed: keep today's count.
+      history[raw.today.date] = {
+        a: nonNegative(raw.today.attempts),
+        c: nonNegative(raw.today.correct)
+      };
     }
     return {
       ...base,
@@ -103,9 +112,11 @@
 
   function read() {
     let raw = memoryValue;
-    try {
-      raw = localStorage.getItem(STORAGE_KEY) || '';
-    } catch {}
+    if (!writeFailed) {
+      try {
+        raw = localStorage.getItem(STORAGE_KEY) || '';
+      } catch {}
+    }
     try {
       return normalize(raw ? JSON.parse(raw) : null);
     } catch {
@@ -117,7 +128,12 @@
     const normalized = normalize(state);
     const serialized = JSON.stringify(normalized);
     memoryValue = serialized;
-    try { localStorage.setItem(STORAGE_KEY, serialized); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, serialized);
+      writeFailed = false;
+    } catch {
+      writeFailed = true;
+    }
     for (const listener of listeners) {
       try { listener(normalized); } catch (error) { console.warn(error); }
     }
@@ -126,7 +142,9 @@
 
   // Brings a stored state up to date for `todayKey`. Missed days are covered
   // by tickets when enough are held; otherwise the streak resets to 0 and the
-  // tickets are kept for the next streak. Returns true when anything changed.
+  // tickets are kept for the next streak. A last study date in the future
+  // (device clock moved) is left alone so a wrong clock cannot wipe the
+  // streak. Returns true when anything changed.
   function reconcile(state, todayKey) {
     let changed = false;
     const gap = differenceInDays(todayKey, state.lastQualifiedDate);
@@ -153,10 +171,6 @@
         state.ticketMilestone = 0;
         changed = true;
       }
-    } else if (state.lastQualifiedDate && gap < 0 && state.currentStreakDays !== 0) {
-      state.currentStreakDays = 0;
-      state.ticketMilestone = 0;
-      changed = true;
     }
     if (state.today.date !== todayKey) {
       state.today = { date: todayKey, attempts: 0, correct: 0 };
@@ -168,7 +182,9 @@
   function applyRecord(state, todayKey, correct) {
     reconcile(state, todayKey);
     const gap = differenceInDays(todayKey, state.lastQualifiedDate);
-    const isFirstActivityToday = state.lastQualifiedDate !== todayKey;
+    // gap <= 0 means today (or a day before a future-dated record) is
+    // already counted.
+    const isFirstActivityToday = !state.lastQualifiedDate || !(gap <= 0);
 
     if (isFirstActivityToday) {
       state.currentStreakDays = gap === 1 && state.currentStreakDays > 0
@@ -214,9 +230,12 @@
     return state;
   }
 
+  // Display-only: shows what today looks like without saving. Tickets are
+  // only spent by record(), i.e. when the student actually answers.
   function status(date = new Date()) {
     const state = read();
-    return reconcile(state, localDateKey(date)) ? write(state) : state;
+    reconcile(state, localDateKey(date));
+    return state;
   }
 
   function record({ date = new Date(), correct = false } = {}) {
@@ -235,6 +254,7 @@
 
   function clear() {
     memoryValue = '';
+    writeFailed = false;
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
     return write(blankState());
   }
@@ -283,6 +303,20 @@
     const status0 = run(blankState(), days('2026-08-01', 2));
     reconcile(status0, '2026-08-05');
     check('opening the page after a gap shows 0 days', status0.currentStreakDays === 0);
+
+    const back = run(blankState(), days('2026-08-01', 20));
+    applyRecord(back, '2026-07-31', true);
+    applyRecord(back, '2026-08-21', true);
+    check('a clock set back keeps the streak', back.currentStreakDays === 21);
+
+    const ahead = run(blankState(), days('2026-08-01', 5));
+    applyRecord(ahead, '2026-08-09', true);
+    applyRecord(ahead, '2026-08-06', true);
+    reconcile(ahead, '2026-08-06');
+    check('a clock moved ahead and back does not reset to 0', ahead.currentStreakDays >= 1 && ahead.lastQualifiedDate === '2026-08-09');
+
+    const legacy = normalize({ lastQualifiedDate: '2026-08-01', currentStreakDays: 3, today: { date: '2026-08-01', attempts: 40, correct: 30 } });
+    check('old saves keep today\'s answer count in history', legacy.history['2026-08-01']?.a === 40);
 
     const daily = blankState();
     applyRecord(daily, '2026-08-01', true);

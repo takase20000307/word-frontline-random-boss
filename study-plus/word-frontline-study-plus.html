@@ -35,7 +35,7 @@
   </style>
   <link rel="stylesheet" href="word-frontline-v2.css?v=3.2.1">
   <link rel="stylesheet" href="word-frontline-plus.css?v=4.2.0">
-  <link rel="stylesheet" href="study-motivation.css?v=1.0.0">
+  <link rel="stylesheet" href="study-motivation.css?v=1.1.0">
 </head>
 <body>
   <!-- Gameplay HUD: semantic controls stay in HTML while the battlefield is Canvas 2D. -->
@@ -499,10 +499,10 @@ detect	他：を検出する；を見抜く
   function initGame(){loadProgress();initializeWords();if('speechSynthesis'in window)speechSynthesis.addEventListener?.('voiceschanged',()=>loadVoices(true));loadVoices(false);document.body.classList.toggle('reduced-motion',save.settings.reducedMotion);$('#quickRate').value=save.voice.rate;$('#quickVolume').value=save.voice.volume;renderModeGrid();wireEvents();initCanvas();applyResponsiveLayout();renderHUD();renderChoices();runSelfTests();}
   document.addEventListener('DOMContentLoaded',initGame);
   </script>
-  <script src="word-frontline-v2.js?v=3.2.1"></script>
+  <script src="word-frontline-v2.js?v=3.2.2"></script>
   <script src="word-frontline-data.js?v=2026.08.13"></script>
-<script src="study-streak.js?v=1.1.0"></script>
-  <script src="word-frontline-plus.js?v=4.2.0"></script>
-  <script src="study-motivation.js?v=1.0.0"></script>
+<script src="study-streak.js?v=1.2.0"></script>
+  <script src="word-frontline-plus.js?v=4.2.1"></script>
+  <script src="study-motivation.js?v=1.1.0"></script>
 </body>
 </html>

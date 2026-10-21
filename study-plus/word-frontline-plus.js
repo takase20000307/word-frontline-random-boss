@@ -2,7 +2,7 @@
 'use strict';
 
 (() => {
-  const PLUS_VERSION = '4.2.0';
+  const PLUS_VERSION = '4.2.1';
   const data = window.WordFrontlineData;
   const streak = window.WordFrontlineStreak;
   // Each preset stays active through its test's final day. The next preset
@@ -157,7 +157,9 @@
 
     updateWordStats = function updateWordStatsStudyPlus(sense, correct, reaction) {
       const result = original.updateWordStats(sense, correct, reaction);
-      streak?.record({ correct: Boolean(correct) });
+      // A timeout is not an answer: it does not count as studying today.
+      const timedOut = !correct && Number(reaction) >= questionTimeLimit * 1000 - 1;
+      if (!timedOut) streak?.record({ correct: Boolean(correct) });
       renderStreak();
       return result;
     };
