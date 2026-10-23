@@ -108,6 +108,24 @@ button.plus-panel:focus-visible {
 
 .streak-card strong span { font-size: 18px; }
 
+.streak-tickets {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  border: 1px dashed rgba(255, 209, 102, .35);
+  border-radius: 999px;
+  padding: 3px 10px 3px 7px;
+  color: #c9b48a;
+  font-size: 12px;
+}
+
+.streak-tickets b { color: #ffe4a3; font-size: 15px; }
+.streak-tickets small { margin: 0 !important; color: inherit !important; font-size: 11px; }
+.streak-tickets.has-ticket { border-style: solid; border-color: rgba(255, 209, 102, .7); background: rgba(255, 209, 102, .12); color: #ffe4a3; }
+
 .streak-card p {
   position: relative;
   z-index: 1;
@@ -313,8 +331,10 @@ button.plus-panel:focus-visible {
   .plus-panel { padding: 11px 13px; }
   .streak-card { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; align-items: center; }
   .streak-card .plus-kicker,
-  .streak-card small,
+  .streak-card > small,
+  .streak-card .streak-tickets,
   .streak-card p { grid-column: 1; }
+  .streak-card .streak-tickets { justify-self: start; }
   .streak-card strong { grid-column: 2; grid-row: 1 / span 3; }
   .streak-card strong b { font-size: 38px; }
   .range-grid { grid-template-columns: 1fr; }

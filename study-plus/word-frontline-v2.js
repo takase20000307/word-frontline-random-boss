@@ -15,7 +15,7 @@
 'use strict';
 
 (() => {
-  const UPDATE_VERSION = '3.2.0';
+  const UPDATE_VERSION = '3.2.2';
   const RAPID_TARGET_MS = 10 * 60 * 1000;
   const RAPID_MEMORY_MS = 60 * 1000;
   const WEAK_BOSS_PASSES = 2;
@@ -131,6 +131,37 @@
 
   injectUpdateInterface();
   installOverrides();
+
+  // Read-only status for later layers (Study Plus motivation features).
+  window.WordFrontlineUpdate = Object.freeze({
+    version: UPDATE_VERSION,
+    isRapidActive: () => rapid.active,
+    rapidMode: () => (rapid.active ? rapid.mode : ''),
+    isWeakBossPhase: () => isWeakBossPhase(),
+    isPairActive: () => pair.active,
+    finishedRapidMode: () => rapid.finishedMode,
+    pairSelfRank: () => {
+      if (!pair.finished) return 0;
+      const ranking = serializePairPlayers().sort(
+        (a, b) => b.score - a.score || b.correct - a.correct || a.seat - b.seat
+      );
+      return ranking.findIndex(player => player.id === pair.selfPlayerId) + 1;
+    },
+    pairOutcome: () => {
+      if (!pair.finished) return { rank: 0, topTie: false, completed: false };
+      const players = serializePairPlayers();
+      const ranking = [...players].sort(
+        (a, b) => b.score - a.score || b.correct - a.correct || a.seat - b.seat
+      );
+      const topScore = ranking[0]?.score || 0;
+      return {
+        rank: ranking.findIndex(player => player.id === pair.selfPlayerId) + 1,
+        topTie: ranking.filter(player => player.score === topScore).length > 1,
+        completed: pair.rounds > 0 && pair.round >= pair.rounds && players.every(player => player.connected)
+      };
+    },
+    weakBossPasses: WEAK_BOSS_PASSES
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
     initializeUpdate();

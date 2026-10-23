@@ -19,8 +19,7 @@
     isPreparing: false,
     previewRemaining: 0,
     previewTimer: 0,
-    speechToken: 0,
-    streakRecorded: false
+    speechToken: 0
   };
 
   let englishVoices = [];
@@ -84,6 +83,11 @@
     let next = streakState;
     try { next ||= window.WordFrontlineStreak?.status?.(); } catch (error) { console.warn('Streak status unavailable:', error); }
     el.streakDays.textContent = String(next?.currentStreakDays || 0);
+    const tickets = Math.max(0, Number(next?.freezeTickets) || 0);
+    const ticketChip = document.getElementById('streakTickets');
+    const ticketCount = document.getElementById('streakTicketCount');
+    if (ticketCount) ticketCount.textContent = String(tickets);
+    ticketChip?.classList.toggle('hidden', tickets === 0);
   }
 
   function refreshEnglishVoices() {
@@ -379,9 +383,9 @@
     el.wave?.classList.remove('is-playing');
   }
 
-  function recordStreakOnce(isCorrect) {
-    if (state.streakRecorded) return;
-    state.streakRecorded = true;
+  // Every answer counts toward today's goals; the streak itself still
+  // advances only once per day inside WordFrontlineStreak.record().
+  function recordStreak(isCorrect) {
     try {
       const streakState = window.WordFrontlineStreak?.record?.({ correct: isCorrect });
       updateStreak(streakState);
@@ -398,7 +402,7 @@
     const isCorrect = selectedIndex === item.correctIndex;
     if (isCorrect) state.score += 1;
     state.answers.push({ itemId: item.id, selectedIndex, correct: isCorrect });
-    recordStreakOnce(isCorrect);
+    recordStreak(isCorrect);
 
     el.scoreText.textContent = String(state.score);
     el.progressFill.style.width = `${((state.index + 1) / state.set.items.length) * 100}%`;

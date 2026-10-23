@@ -2,7 +2,7 @@
 'use strict';
 
 (() => {
-  const PLUS_VERSION = '4.1.0';
+  const PLUS_VERSION = '4.2.1';
   const data = window.WordFrontlineData;
   const streak = window.WordFrontlineStreak;
   // Each preset stays active through its test's final day. The next preset
@@ -157,7 +157,9 @@
 
     updateWordStats = function updateWordStatsStudyPlus(sense, correct, reaction) {
       const result = original.updateWordStats(sense, correct, reaction);
-      streak?.record({ correct: Boolean(correct) });
+      // A timeout is not an answer: it does not count as studying today.
+      const timedOut = !correct && Number(reaction) >= questionTimeLimit * 1000 - 1;
+      if (!timedOut) streak?.record({ correct: Boolean(correct) });
       renderStreak();
       return result;
     };
@@ -239,6 +241,9 @@
             <span class="plus-kicker">学習継続</span>
             <strong><b id="studyStreakDays">0</b><span>日</span></strong>
             <small id="studyStreakMeta">今日はまだ未学習</small>
+            <span id="studyStreakTickets" class="streak-tickets" title="7日続けるごとに1枚（最大2枚）。休んだ日に自動で使われ、継続日数を守ります。">
+              <span aria-hidden="true">🎫</span><b id="studyStreakTicketCount">0</b><small id="studyStreakTicketHint">7日連続で保険チケット</small>
+            </span>
             <p id="studyStreakCheer" class="hidden">先生や保護者の方に自慢しよう！</p>
           </div>
         </div>
@@ -447,6 +452,20 @@
         ? `今日も1問答えて継続 · 最長${state.longestStreakDays}日`
         : '今日1問で、継続1日目スタート';
     setTextSafe('#studyStreakMeta', meta);
+    const tickets = Math.max(0, Number(state.freezeTickets) || 0);
+    const maxTickets = streak?.MAX_TICKETS || 2;
+    const every = streak?.TICKET_EVERY_DAYS || 7;
+    const untilNext = every - (state.currentStreakDays % every);
+    setTextSafe('#studyStreakTicketCount', tickets);
+    setTextSafe(
+      '#studyStreakTicketHint',
+      tickets >= maxTickets
+        ? `保険チケット 最大${maxTickets}枚 所持中`
+        : tickets > 0
+          ? `保険チケット所持 · あと${untilNext}日で+1`
+          : `あと${untilNext}日で保険チケット`
+    );
+    document.querySelector('#studyStreakTickets')?.classList.toggle('has-ticket', tickets > 0);
     document.querySelector('#studyStreakCheer')?.classList.toggle('hidden', state.currentStreakDays <= 21);
   }
 
