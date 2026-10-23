@@ -129,6 +129,16 @@ button { color: inherit; }
   font-size: 12px;
 }
 .streak-chip b { font-size: 18px; }
+.streak-chip .streak-tickets {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 198, 110, .35);
+}
+.streak-chip .streak-tickets b { font-size: 14px; }
+.streak-chip .streak-tickets.hidden { display: none; }
 
 .shell {
   width: min(1120px, calc(100% - 36px));

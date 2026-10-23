@@ -8,10 +8,10 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>LISTENING LAB | WORD FRONTLINE STUDY PLUS</title>
   <meta name="description" content="共通テスト・英検準2級・英検2級の形式を参考にした、完全オリジナルの英語リスニング練習。">
-  <link rel="stylesheet" href="listening.css?v=1.0.0">
+  <link rel="stylesheet" href="listening.css?v=1.1.0">
   <script src="listening-data.js?v=1.0.0" defer></script>
-  <script src="study-streak.js?v=1.0.1" defer></script>
-  <script src="listening.js?v=1.0.0" defer></script>
+  <script src="study-streak.js?v=1.2.0" defer></script>
+  <script src="listening.js?v=1.2.0" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#mainContent">本文へ移動</a>
@@ -30,6 +30,7 @@
     </div>
     <div class="streak-chip" id="streakChip" aria-label="現在の学習継続日数">
       <span aria-hidden="true">🔥</span><b id="streakDays">0</b><span>日</span>
+      <span id="streakTickets" class="streak-tickets hidden" title="保険チケット：休んだ日に自動で使われ、継続日数を守ります">🎫<b id="streakTicketCount">0</b></span>
     </div>
   </header>
 
