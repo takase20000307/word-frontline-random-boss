@@ -15,10 +15,7 @@ window.WordFrontlineData = {
       "lessonStart": 1,
       "lessonEnd": 11,
       "date": "5月11–12日",
-      "topics": [
-        "—",
-        "—"
-      ],
+      "topics": [],
       "wordCount": 231
     },
     {
@@ -28,10 +25,7 @@ window.WordFrontlineData = {
       "lessonStart": 12,
       "lessonEnd": 21,
       "date": "6月22–23日",
-      "topics": [
-        "—",
-        "—"
-      ],
+      "topics": [],
       "wordCount": 229
     },
     {
@@ -41,11 +35,7 @@ window.WordFrontlineData = {
       "lessonStart": 22,
       "lessonEnd": 31,
       "date": "9月1–2日",
-      "topics": [
-        "—",
-        "—",
-        "—"
-      ],
+      "topics": [],
       "wordCount": 223
     },
     {
@@ -55,9 +45,7 @@ window.WordFrontlineData = {
       "lessonStart": 32,
       "lessonEnd": 39,
       "date": "9月28–29日",
-      "topics": [
-        "—"
-      ],
+      "topics": [],
       "wordCount": 145
     },
     {
@@ -67,9 +55,7 @@ window.WordFrontlineData = {
       "lessonStart": 40,
       "lessonEnd": 49,
       "date": "10月26–27日",
-      "topics": [
-        "—"
-      ],
+      "topics": [],
       "wordCount": 226
     },
     {
@@ -79,10 +65,7 @@ window.WordFrontlineData = {
       "lessonStart": 50,
       "lessonEnd": 56,
       "date": "11月16–17日",
-      "topics": [
-        "—",
-        "—"
-      ],
+      "topics": [],
       "wordCount": 141
     },
     {
@@ -92,9 +75,7 @@ window.WordFrontlineData = {
       "lessonStart": 57,
       "lessonEnd": 58,
       "date": "12月14–15日",
-      "topics": [
-        "—"
-      ],
+      "topics": [],
       "wordCount": 42
     },
     {
@@ -104,9 +85,7 @@ window.WordFrontlineData = {
       "lessonStart": 59,
       "lessonEnd": 62,
       "date": "1月12–13日",
-      "topics": [
-        "—"
-      ],
+      "topics": [],
       "wordCount": 83
     },
     {
@@ -116,9 +95,7 @@ window.WordFrontlineData = {
       "lessonStart": 63,
       "lessonEnd": 68,
       "date": "2月8–9日",
-      "topics": [
-        "—"
-      ],
+      "topics": [],
       "wordCount": 130
     },
     {

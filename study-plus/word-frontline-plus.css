@@ -282,6 +282,8 @@ button.plus-panel:focus-visible {
   line-height: 1.4;
 }
 
+.range-topics:empty { display: none; }
+
 .range-card-footer {
   display: flex;
   justify-content: space-between;
