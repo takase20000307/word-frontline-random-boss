@@ -1,0 +1,425 @@
+/* Study Plus boost layer: question direction, combo, personal bests, result recap, recommendation. */
+
+/* ---------- Mode screen: question direction ---------- */
+
+.boost-direction {
+  width: min(700px, 100%);
+  margin: 10px auto 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.boost-direction-label {
+  color: #58dcff;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.boost-direction-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid #2f5c76;
+  border-radius: 13px;
+  background: #081a29;
+}
+
+.boost-dir-option {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #cfe6f5;
+  text-align: center;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.boost-dir-option strong { font-size: 16px; line-height: 1.2; }
+.boost-dir-option small { overflow: hidden; color: #8fb2c8; font-size: 10.5px; line-height: 1.3; }
+.boost-dir-option:hover { border-color: #3f7898; }
+.boost-dir-option.selected {
+  border-color: #43d9ff;
+  background: linear-gradient(180deg, #164a6b, #0f3350);
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(67, 217, 255, .16);
+}
+.boost-dir-option.selected small { color: #c5ecff; }
+.boost-dir-option[data-direction="ja-en"].selected {
+  border-color: #ffd166;
+  background: linear-gradient(180deg, #4a3a12, #2c2208);
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, .16);
+}
+.boost-dir-option[data-direction="ja-en"].selected small { color: #ffe8a8; }
+
+.boost-sfx-toggle {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-width: 58px;
+  padding: 6px 8px;
+  border: 1px solid #3f7898;
+  border-radius: 11px;
+  background: #0c2132;
+  color: #dff7ff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.boost-sfx-toggle span { font-size: 10px; font-weight: 900; color: #8fb2c8; }
+.boost-sfx-toggle.off { opacity: .6; border-color: #34495a; }
+
+.boost-direction-note {
+  width: min(700px, 100%);
+  margin: 5px auto 0;
+  color: #7f9db2;
+  font-size: 11px;
+  text-align: left;
+}
+
+/* ---------- Start screen: recommendation and personal bests ---------- */
+
+/* The start button and the recommendation share one sticky row. */
+.boost-launch {
+  position: sticky;
+  bottom: 10px;
+  z-index: 3;
+  padding-top: 10px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(8, 21, 34, 0), rgba(8, 21, 34, .94) 38%);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 10px;
+  width: min(800px, 100%);
+  margin: 0 auto;
+}
+#startScreen .boost-launch #toModesButton { position: static; flex: 0 1 390px; }
+
+.boost-next-btn {
+  flex: 0 1 330px;
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  padding: 8px 16px;
+  border: 1px solid #ffe08a;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffcf4d, #e09b12);
+  color: #2a1800;
+  text-align: left;
+  box-shadow: 0 7px 0 #7a5208, 0 0 26px #ffd16633;
+  cursor: pointer;
+}
+.boost-next-btn:hover { filter: brightness(1.07); }
+.boost-next-btn:active { transform: translateY(2px); box-shadow: 0 4px 0 #7a5208; }
+.boost-next-kicker { font-size: 11px; font-weight: 1000; letter-spacing: .06em; color: #5a3a00; }
+.boost-next-btn strong,
+.boost-next-btn small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.boost-next-btn strong { font-size: 18px; line-height: 1.25; font-weight: 1000; }
+.boost-next-btn small { font-size: 12px; font-weight: 800; color: #4a3000; }
+
+.boost-records {
+  width: min(800px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: -6px auto 16px;
+  padding: 8px 12px;
+  border: 1px dashed #3a4c5c;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #b9cddc;
+  text-align: left;
+}
+
+.boost-records-label { color: #ffd166; font-weight: 1000; letter-spacing: .04em; }
+.boost-records-empty { color: #8aa3b6; }
+.boost-record {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 3px 9px;
+  border: 1px solid #34536a;
+  border-radius: 999px;
+  background: #0b1d2c;
+  white-space: nowrap;
+}
+.boost-record i { font-style: normal; }
+.boost-record b { color: #fff; font-size: 14px; }
+
+/* Mode screen: keep the deploy button in view as well. */
+#modeScreen #deployButton { position: sticky; bottom: 10px; z-index: 3; }
+
+/* ---------- Battle: Japanese → English question ---------- */
+
+.boost-dir-tag {
+  position: absolute;
+  top: -9px;
+  right: 10px;
+  padding: 2px 8px;
+  border: 1px solid #43d9ff;
+  border-radius: 999px;
+  background: #0a2236;
+  color: #bdf2ff;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+.boost-dir-tag.reverse { border-color: #ffd166; background: #3a2c08; color: #ffe8a8; }
+
+#app.boost-ja-en .question-word {
+  display: inline-block;
+  max-width: 100%;
+  font-size: clamp(19px, 2.7vw, 31px);
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-shadow: 0 0 14px #ffd16655;
+}
+
+/* The English is the answer: no voice button until it is revealed. */
+#app.boost-ja-en:not(.boost-revealed) #speakButton { visibility: hidden; }
+
+.boost-reveal {
+  margin-top: 4px;
+  color: #7dffc8;
+  font-size: clamp(22px, 3.2vw, 34px);
+  font-weight: 1000;
+  line-height: 1.1;
+  letter-spacing: .02em;
+  text-shadow: 0 0 14px #50eea866;
+}
+.boost-reveal::before { content: "→ "; color: #9fe9c9; font-size: .7em; }
+
+#choices .choice.boost-en-choice .choice-text {
+  font-size: 1.08em;
+  letter-spacing: .01em;
+}
+
+/* After answering: the other side of each choice. */
+#choices .choice.boost-revealed-choice { padding-bottom: 19px; }
+.boost-choice-sub {
+  position: absolute;
+  left: 48px;
+  right: 8px;
+  bottom: 4px;
+  overflow: hidden;
+  color: #c8dcea;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: .92;
+}
+#choices .choice.correct .boost-choice-sub { color: #c9ffe6; }
+
+/* The rapid-run status pill used to sit on top of the prompt; move it up
+   into the free strip above the question card. (Phones keep it at the
+   bottom, as word-frontline-v2.css places it.) */
+@media (min-width: 700px) {
+  .run-hud { top: 6px; }
+}
+
+/* ---------- Battle: combo ---------- */
+
+.boost-combo {
+  position: absolute;
+  z-index: 9;
+  right: 12px;
+  top: 34%;
+  display: grid;
+  justify-items: center;
+  min-width: 66px;
+  padding: 6px 9px 5px;
+  border: 1px solid #43d9ff;
+  border-radius: 14px;
+  background: #06182add;
+  box-shadow: 0 8px 22px #0008;
+  color: #bdf2ff;
+  pointer-events: none;
+}
+.boost-combo b { font-size: 30px; line-height: 1; font-weight: 1000; color: #fff; }
+.boost-combo span { font-size: 10px; font-weight: 1000; letter-spacing: .16em; }
+.boost-combo.tier-2 { border-color: #50eea8; color: #c8ffe7; }
+.boost-combo.tier-3 { border-color: #ffd166; color: #ffe8a8; box-shadow: 0 0 18px #ffd16655; }
+.boost-combo.tier-4 { border-color: #ff9b42; color: #ffd3ad; box-shadow: 0 0 22px #ff9b4266; background: #2a1406dd; }
+.boost-combo.tier-5 {
+  border-color: #ff4dff;
+  color: #ffd6ff;
+  box-shadow: 0 0 26px #ff4dff66;
+  background: linear-gradient(160deg, #2a0f3add, #0f1a3add);
+}
+.boost-combo.tier-5 b {
+  background: linear-gradient(90deg, #ff6b6b, #ffd166, #50eea8, #43d9ff, #c77dff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.boost-combo.bump { animation: boostBump .32s ease; }
+
+.boost-combo-break {
+  position: absolute;
+  z-index: 9;
+  right: 12px;
+  top: calc(34% + 64px);
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #2a1219cc;
+  color: #ffc4ca;
+  font-size: 11px;
+  font-weight: 900;
+  pointer-events: none;
+  opacity: 0;
+}
+.boost-combo-break.show { animation: boostFade 1.3s ease both; }
+
+.mtv-ping.combo { border-color: #ff9b42; color: #ffe2c8; background: #2a1406ee; }
+
+@keyframes boostBump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+@keyframes boostFade {
+  0% { opacity: 0; transform: translateY(-4px); }
+  15%, 70% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; }
+}
+
+/* ---------- Result recap ---------- */
+
+.boost-result {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #2f6f62;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(80, 238, 168, .1), transparent 45%),
+    #0b1f26;
+  text-align: left;
+}
+
+.boost-result-head { display: grid; gap: 4px; }
+.boost-cheer { color: #eafff5; font-size: clamp(16px, 2vw, 19px); line-height: 1.35; }
+.boost-result-stats { color: #a9c6d6; font-size: 12.5px; line-height: 1.6; }
+.boost-result-stats .sep { margin: 0 6px; color: #4d6a7d; }
+.boost-new {
+  display: inline-block;
+  margin-left: 3px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ffd166;
+  color: #2a1800;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 1000;
+}
+
+.boost-words { display: grid; gap: 8px; }
+.boost-word-group > b { display: block; margin-bottom: 5px; font-size: 13px; }
+.boost-word-group.conquered > b { color: #7fe6ff; }
+.boost-word-group.defeated > b { color: #ffd166; }
+.boost-word-group.missed > b { color: #ffb3ba; }
+.boost-words-hint { margin: 0; color: #6f8ea3; font-size: 11px; }
+
+.boost-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.boost-chip {
+  display: grid;
+  gap: 1px;
+  max-width: 200px;
+  padding: 5px 10px;
+  border: 1px solid #3a6f8a;
+  border-radius: 10px;
+  background: #0d2638;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.boost-chip span { font-size: 14px; font-weight: 900; }
+.boost-chip small { overflow: hidden; color: #a9c6d6; font-size: 10.5px; text-overflow: ellipsis; white-space: nowrap; }
+.boost-chip:hover, .boost-chip:focus-visible { border-color: #43d9ff; }
+.boost-chip.conquered { border-color: #2f7ea3; }
+.boost-chip.defeated { border-color: #9a7a22; background: #231c08; }
+.boost-chip.missed { border-color: #8a4652; background: #2a1219; }
+.boost-chip.missed.recovered span::after { content: " ✓"; color: #7dffc8; }
+.boost-chip-more { align-self: center; color: #8aa3b6; font-size: 12px; }
+
+.boost-goals { display: grid; gap: 6px; }
+.boost-goals .plus-kicker { margin: 0; color: #50eea8; }
+.boost-goal {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(70px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.boost-goal-label { overflow: hidden; color: #e3f3ff; text-overflow: ellipsis; white-space: nowrap; }
+.boost-goal-label i { margin-right: 5px; font-style: normal; }
+.boost-goal-bar {
+  height: 9px;
+  overflow: hidden;
+  border: 1px solid #2f5a4c;
+  border-radius: 999px;
+  background: #04110d;
+}
+.boost-goal-bar b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2bc48a, #7dffc8); }
+.boost-goal em { color: #7dffc8; font-size: 12px; font-style: normal; font-weight: 900; white-space: nowrap; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 699px) {
+  .boost-direction { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+  .boost-direction-label { grid-column: 1 / -1; }
+  .boost-dir-option { padding: 6px 4px; }
+  .boost-dir-option strong { font-size: 15px; }
+  .boost-dir-option small { font-size: 9.5px; }
+  .boost-launch { gap: 6px; }
+  #startScreen .boost-launch #toModesButton { flex: 1 1 50%; min-width: 0; padding: 12px 8px; font-size: 19px; }
+  .boost-next-btn { flex: 1 1 50%; padding: 6px 10px; }
+  .boost-next-kicker { font-size: 10px; }
+  .boost-next-btn strong { font-size: 15px; }
+  .boost-next-btn small { font-size: 10.5px; }
+  .boost-records { margin: 0 auto 12px; font-size: 11px; }
+  .boost-combo { right: 8px; top: 30%; min-width: 54px; padding: 4px 7px; }
+  .boost-combo b { font-size: 24px; }
+  .boost-combo-break { right: 8px; top: calc(30% + 52px); }
+  .boost-goal { grid-template-columns: minmax(0, 1fr) auto; gap: 3px 8px; }
+  .boost-goal-bar { grid-column: 1 / -1; grid-row: 2; }
+  #choices .choice.boost-revealed-choice { padding-bottom: 16px; }
+  .boost-choice-sub { left: 43px; bottom: 2px; font-size: 10px; }
+}
+
+@media (max-width: 380px) {
+  .boost-dir-option small { display: none; }
+  .boost-choice-sub { left: 40px; }
+}
+
+@media (max-height: 760px) and (min-width: 700px) {
+  .boost-records { margin: -2px auto 10px; padding: 6px 10px; }
+  .boost-direction-note { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boost-combo.bump,
+  .boost-combo-break.show { animation: none; opacity: 1; }
+}
+
+.reduced-motion .boost-combo.bump { animation: none; }
+.reduced-motion .boost-combo-break.show { animation: none; opacity: 1; }

@@ -13,7 +13,7 @@
 'use strict';
 
 (() => {
-  const MOTIVATION_VERSION = '1.1.0';
+  const MOTIVATION_VERSION = '1.2.0';
   const STORAGE_KEY = 'wordFrontline:study-plus:motivation:v1';
   const streak = window.WordFrontlineStreak;
   const plus = window.WordFrontlinePlus;
@@ -61,6 +61,8 @@
     // A word missed earlier in the same run and answered correctly later
     // (re-asks, weakness boss) pays little, so missing on purpose never pays.
     freshReview: 3,
+    // Japanese → English (recall the English) is harder than recognizing it.
+    reverseBonus: 3,
     newCard: 20,
     goldCard: 50,
     stageClear: 50,
@@ -884,6 +886,10 @@
       attempts: today.attempts,
       weakDefeats: daily.weakDefeats,
       weakPool,
+      silverTarget: DAILY.silverAttempts,
+      goldUnit: fallbackRule ? 'correct' : 'weak',
+      goldCurrent: fallbackRule ? Math.min(daily.solid, DAILY.goldFallbackCorrect) : Math.min(daily.weakDefeats, DAILY.goldWeakDefeats),
+      goldTarget: fallbackRule ? DAILY.goldFallbackCorrect : DAILY.goldWeakDefeats,
       bronze: today.attempts >= 1,
       silver: daily.silver || today.attempts >= DAILY.silverAttempts,
       gold: daily.gold || goldByWeak || goldByVolume,
@@ -1093,6 +1099,7 @@
         mstate.daily.solid++;
       }
       let gained = freshMiss ? XP.freshReview : XP.correct;
+      if (!freshMiss && window.WordFrontlineBoost?.answerDirection?.() === 'ja-en') gained += XP.reverseBonus;
       if (weakBeforeSession) {
         gained += XP.weakBonus;
         session.weakDefeats++;
@@ -1909,7 +1916,7 @@
     if (resetActions && !$id('resetMotivation')) {
       resetActions.insertAdjacentHTML('beforebegin', `
         <label class="toggle plus-reset-option">
-          <input id="resetMotivation" type="checkbox"> 階級・補給箱・装備・図鑑・ゴースト記録もリセットする
+          <input id="resetMotivation" type="checkbox"> 階級・補給箱・装備・図鑑・ゴースト記録・自己ベストもリセットする
         </label>
       `);
     }
@@ -2986,6 +2993,11 @@
     rankInfo: () => ({ ...rankInfo() }),
     conquestSummary: () => conquestSummary(activeSenses()),
     cardSummary: () => cardSummary(activeSenses()),
+    nextMilestone: () => {
+      const milestone = nextMilestone(cardSummary(activeSenses()));
+      return milestone ? { ...milestone } : null;
+    },
+    xpTable: () => ({ ...XP }),
     dailyStatus: () => dailyStatus(),
     todayMission: () => ({ ...todayMission() }),
     weeklyStats: () => weeklyStats(),

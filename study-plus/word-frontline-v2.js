@@ -15,7 +15,7 @@
 'use strict';
 
 (() => {
-  const UPDATE_VERSION = '3.2.2';
+  const UPDATE_VERSION = '3.3.0';
   const RAPID_TARGET_MS = 10 * 60 * 1000;
   const RAPID_MEMORY_MS = 60 * 1000;
   const WEAK_BOSS_PASSES = 2;
@@ -2161,6 +2161,9 @@
       round: pair.round,
       rounds: pair.rounds,
       timeLimit: PAIR_TIME_LIMIT,
+      // English → Japanese or Japanese → English, decided when the choices
+      // were built (study-boost.js). Older guests ignore it.
+      direction: window.WordFrontlineBoost?.pendingDirection?.() === 'ja-en' ? 'ja-en' : 'en-ja',
       target: serializeSense(target),
       choices: choices.map(serializeChoice)
     };
@@ -2199,6 +2202,7 @@
     pair.localReactionMs = pair.currentTimeLimit * 1000;
     stageSlot = pair.round;
     stageStats.slots = pair.round;
+    window.WordFrontlineBoost?.useDirection?.(message.direction);
     presentQuestion(target, choices, false);
   }
 
